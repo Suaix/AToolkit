@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "AToolkit"
 include ':app'
+include ':Toolkits:alog'
