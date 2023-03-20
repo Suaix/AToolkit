@@ -10,7 +10,7 @@ private const val TAG = "ALog"
  * Time: 2023/3/17 13:48
  * Description: ALog是ILog的默认实现，使用Android自带的Log进行日志输出
  */
-class ALog : ILog {
+class ALog : IALog {
     private var isDebug = false
     override fun init(context: Context, config: ALogConfig) {
         v(TAG, "ALog init with config --> $config", null)

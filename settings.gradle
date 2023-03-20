@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 rootProject.name = "AToolkit"
 include ':app'
 include ':Toolkits:alog'
+include ':Toolkits:apermission'
+include ':Toolkits:acommon'

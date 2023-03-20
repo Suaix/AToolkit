@@ -1,16 +1,12 @@
-package com.atoolkit.alog
+package com.atoolkit.common
 
-import android.content.Context
 
 /**
- * Log接口，抽象Log相关行为
+ * Author:summer
+ * Time: 2023/3/18 19:21
+ * Description: ILog是log的抽象接口，用来规范所有工具库中日志使用；
  */
 interface ILog {
-    /**
-     * 初始化Log，子类根据需要自己实现
-     */
-    fun init(context: Context, config: ALogConfig)
-
     /**
      * v级别的log
      */
@@ -35,9 +31,4 @@ interface ILog {
      * e级别的log
      */
     fun e(tag: String?, msg: String, t: Throwable?)
-
-    /**
-     * 销毁或释放相关资源，一般调用时机在Application销毁前
-     */
-    fun clear()
 }

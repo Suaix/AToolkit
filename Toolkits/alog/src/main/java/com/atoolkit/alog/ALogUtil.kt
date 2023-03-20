@@ -10,7 +10,7 @@ import android.content.Context
  */
 object ALogUtil {
     lateinit var application: Context
-    private lateinit var log: ILog
+    private lateinit var log: IALog
     private var isInited = false
     private var defaultTag = "ALogUtil"
 

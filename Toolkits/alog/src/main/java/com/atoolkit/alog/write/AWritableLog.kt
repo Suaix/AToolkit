@@ -3,7 +3,7 @@ package com.atoolkit.alog.write
 import android.content.Context
 import android.util.Log
 import com.atoolkit.alog.ALogConfig
-import com.atoolkit.alog.ILog
+import com.atoolkit.alog.IALog
 import com.atoolkit.alog.LOG_DIR_NAME
 import com.atoolkit.alog.LOG_LEVEL_D
 import com.atoolkit.alog.LOG_LEVEL_E
@@ -22,7 +22,7 @@ import java.util.Locale
  * Date: 2023/3/17 15:25
  * LastModifyTime:
  */
-class AWritableLog : ILog {
+class AWritableLog : IALog {
     private var isDebug = false
     private var saveLogLevel = LOG_LEVEL_W
     private val logWriterUseCase = ALogWriterUseCase()

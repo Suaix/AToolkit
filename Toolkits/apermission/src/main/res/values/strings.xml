@@ -1,0 +1,4 @@
+<resources>
+    <string name="permission_request">申请权限</string>
+    <string name="permission_ok">确定</string>
+</resources>
