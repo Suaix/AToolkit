@@ -7,8 +7,8 @@ package com.atoolkit.apermission
  * LastModifyTime:
  */
 data class ExplanationData(
-    val explanTitle: String, // 解释标题
-    val explanMsg: String, // 解释信息内容
+    val explainTitle: String, // 解释标题
+    val explainMsg: String, // 解释信息内容
     val rightText: String, // 右侧按钮文字
     val leftText: String? = null // 左侧按钮文字，可以为null，此时就只有一个按钮
 )
@@ -21,7 +21,7 @@ data class ExplanationData(
  */
 data class PermissionData(
     val permission: String, // 待申请的权限
-    val isAbort: Boolean? // 如果该权限不拒绝后，时候还继续申请后续的权限（如果有的话），此字段只有在单权限申请模式下有效
+    val isAbort: Boolean // 如果该权限不拒绝后，时候还继续申请后续的权限（如果有的话），此字段只有在单权限申请模式下有效
 )
 
 /**
@@ -36,8 +36,8 @@ class APermission private constructor() {
 
     internal var explanationData: ExplanationData? = null
 
-    fun withPermission(permission: String): Builder {
-        return Builder(permission)
+    fun getPermission(): String {
+        return permissionData.permission
     }
 
     class Builder(private val permission: String) {
@@ -100,8 +100,8 @@ class APermission private constructor() {
             aPermission.permissionData = PermissionData(permission, isAbort)
             explanMsg?.let { msg ->
                 aPermission.explanationData = ExplanationData(
-                    explanTitle = explanTitle ?: (application?.getString(R.string.permission_request) ?: ""),
-                    explanMsg = msg,
+                    explainTitle = explanTitle ?: (application?.getString(R.string.permission_request) ?: ""),
+                    explainMsg = msg,
                     rightText = rightText ?: (application?.getString(R.string.permission_ok) ?: ""),
                     leftText = leftText
                 )
