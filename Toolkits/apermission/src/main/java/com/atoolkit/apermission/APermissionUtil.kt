@@ -42,7 +42,7 @@ fun initAPermission(context: Context, log: ILog? = null) {
  * @param permission 权限内容
  * @return true：已被授权该权限；false：未被授权该权限
  */
-fun checkPermission(permission: String): Boolean {
+fun isPermissionGranted(permission: String): Boolean {
     check(isInited) {
         throw IllegalStateException("请先调用init(context, log)方法进行初始化")
     }
@@ -67,7 +67,7 @@ fun checkPermission(permission: String): Boolean {
  * Author: summer
  */
 fun checkPermissionIsAlwaysDeny(activity: Activity, permission: String): Boolean {
-    val hasPermission = checkPermission(permission)
+    val hasPermission = isPermissionGranted(permission)
     if (hasPermission) {
         // 如果已经被授权该权限，则返回false
         return false
@@ -77,10 +77,9 @@ fun checkPermissionIsAlwaysDeny(activity: Activity, permission: String): Boolean
 }
 
 @JvmOverloads
-fun requestPermissionList(
+fun handlePermissions(
     context: Activity,
     permissions: List<APermission>,
-    isOneByOne: Boolean = false,
     callback: IPermissionCallback? = null
 ) {
     check(isInited) {
@@ -96,6 +95,5 @@ fun requestPermissionList(
     originPermissions = permissions
     // 组装数据，调起权限申请页面
     val intent = Intent(context, APermissionActivity::class.java)
-    intent.putExtra(IS_ONEBYONE_FLAG, isOneByOne)
     context.startActivityForResult(intent, APERMISSION_REQUEST_CODE)
 }

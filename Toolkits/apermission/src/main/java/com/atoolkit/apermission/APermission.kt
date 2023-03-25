@@ -20,9 +20,27 @@ data class ExplanationData(
  * LastModifyTime:
  */
 data class PermissionData(
-    val permission: String, // 待申请的权限
+    val permissions: Array<String>, // 待申请的权限
     val isAbort: Boolean // 如果该权限不拒绝后，时候还继续申请后续的权限（如果有的话），此字段只有在单权限申请模式下有效
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PermissionData
+
+        if (!permissions.contentEquals(other.permissions)) return false
+        if (isAbort != other.isAbort) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = permissions.contentHashCode()
+        result = 31 * result + isAbort.hashCode()
+        return result
+    }
+}
 
 /**
  * Description: 权限申请的数据类，包含权限数据和申请说明数据；权限数据必须有，通过 [withPermission] 或 [Builder]构造方法获取Builder实例时传入；
@@ -36,14 +54,14 @@ class APermission private constructor() {
 
     internal var explanationData: ExplanationData? = null
 
-    fun getPermission(): String {
-        return permissionData.permission
+    fun getPermissions(): Array<String> {
+        return permissionData.permissions
     }
 
-    class Builder(private val permission: String) {
+    class Builder(private val permission: Array<String>) {
         private var isAbort = false
-        private var explanTitle: String? = null
-        private var explanMsg: String? = null
+        private var explainTitle: String? = null
+        private var explainMsg: String? = null
         private var leftText: String? = null
         private var rightText: String? = null
 
@@ -60,8 +78,8 @@ class APermission private constructor() {
          * Description: 权限申请解释弹窗的标题
          * Author: summer
          */
-        fun explanTitle(title: String): Builder {
-            this.explanTitle = title
+        fun explainTitle(title: String): Builder {
+            this.explainTitle = title
             return this
         }
 
@@ -69,8 +87,8 @@ class APermission private constructor() {
          * Description: 权限申请解释弹窗的信息
          * Author: summer
          */
-        fun explanMsg(msg: String): Builder {
-            this.explanMsg = msg
+        fun explainMsg(msg: String): Builder {
+            this.explainMsg = msg
             return this
         }
 
@@ -78,7 +96,7 @@ class APermission private constructor() {
          * Description: 权限申请解释弹窗的左侧按钮文案
          * Author: summer
          */
-        fun explanLeftText(leftText: String): Builder {
+        fun explainLeftText(leftText: String): Builder {
             this.leftText = leftText
             return this
         }
@@ -87,7 +105,7 @@ class APermission private constructor() {
          * Description: 权限申请解释弹窗的右侧按钮文案
          * Author: summer
          */
-        fun explanRightText(rightText: String): Builder {
+        fun explainRightText(rightText: String): Builder {
             this.rightText = rightText
             return this
         }
@@ -98,11 +116,11 @@ class APermission private constructor() {
         fun build(): APermission {
             val aPermission = APermission()
             aPermission.permissionData = PermissionData(permission, isAbort)
-            explanMsg?.let { msg ->
+            explainMsg?.let { msg ->
                 aPermission.explanationData = ExplanationData(
-                    explainTitle = explanTitle ?: (application?.getString(R.string.permission_request) ?: ""),
+                    explainTitle = explainTitle ?: (application.getString(R.string.permission_request)),
                     explainMsg = msg,
-                    rightText = rightText ?: (application?.getString(R.string.permission_ok) ?: ""),
+                    rightText = rightText ?: (application.getString(R.string.permission_ok)),
                     leftText = leftText
                 )
             }

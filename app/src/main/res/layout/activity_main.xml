@@ -8,15 +8,9 @@
         tools:context=".MainActivity">
 
     <Button
-            android:id="@+id/bt_multi_permission"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="同时申请多个权限" />
-
-    <Button
             android:id="@+id/bt_single_permission"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="单个权限逐次申请" />
+            android:text="测试权限申请" />
 
 </LinearLayout>

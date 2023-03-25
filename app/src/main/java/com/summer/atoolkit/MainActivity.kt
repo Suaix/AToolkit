@@ -5,8 +5,9 @@ import android.os.Bundle
 import com.atoolkit.alog.ALogUtil
 import com.atoolkit.apermission.APermission
 import com.atoolkit.apermission.IPermissionCallback
-import com.atoolkit.apermission.requestPermissionList
+import com.atoolkit.apermission.handlePermissions
 import com.summer.atoolkit.databinding.ActivityMainBinding
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -16,11 +17,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
-        mBinding.btMultiPermission.setOnClickListener {
-            requestPermissions(false)
-        }
         mBinding.btSinglePermission.setOnClickListener {
-            requestPermissions(true)
+            requestPermissions()
         }
     }
 
@@ -29,9 +27,9 @@ class MainActivity : AppCompatActivity() {
 //        testLog()
     }
 
-    private fun requestPermissions(isOneByOne: Boolean) {
+    private fun requestPermissions() {
         val permissions = buildPermissions()
-        requestPermissionList(this, permissions, isOneByOne, object : IPermissionCallback {
+        handlePermissions(this, permissions, object : IPermissionCallback {
             override fun onPermissionResult(granted: List<String>, denied: List<String>) {
                 ALogUtil.v(msg = "granted permissions:")
                 for (permission in granted) {
@@ -47,22 +45,49 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun buildPermissions(): List<APermission> {
-        val permissions = arrayOf(
-            android.Manifest.permission.READ_PHONE_STATE,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
-            android.Manifest.permission.READ_EXTERNAL_STORAGE,
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            android.Manifest.permission.CAMERA
+        val readPhonePermission =
+            APermission.Builder(arrayOf(android.Manifest.permission.READ_PHONE_STATE))
+                    .isAbortWhenDeny(false)
+                    .explainMsg("需要申请读取电话状态权限，已获取设备信息")
+                    .explainLeftText("cancel")
+                    .explainRightText("Ok")
+                    .build()
+        val locationPermission = APermission.Builder(
+            arrayOf(
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            )
         )
-        val result = mutableListOf<APermission>()
-        for (permission in permissions) {
-            val ap = APermission.Builder(permission).explanMsg("需要申请：$permission 权限").build()
-            result.add(ap)
-        }
-        return result
+                .isAbortWhenDeny(false)
+                .explainMsg("需要获取定位信息，请输入位置权限")
+                .explainTitle("获取位置权限")
+                .explainLeftText("取消")
+                .explainRightText("确定")
+                .build()
+
+        val storagePermission = APermission.Builder(
+            arrayOf(
+                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        )
+                .isAbortWhenDeny(true)
+                .explainMsg("需求获取存储权限，来进行数据存储和获取")
+                .explainLeftText("取消")
+                .explainRightText("确定")
+                .build()
+        val cameraPermission =
+            APermission.Builder(arrayOf(android.Manifest.permission.CAMERA))
+                    .isAbortWhenDeny(false)
+                    .explainMsg("需要申请相机权限，用来进行拍照")
+                    .explainLeftText("cancel")
+                    .explainRightText("Ok")
+                    .build()
+
+        return listOf(readPhonePermission, locationPermission, storagePermission, cameraPermission)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun testLog() {
         var flag = 0
         GlobalScope.launch {

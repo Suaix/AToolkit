@@ -25,7 +25,7 @@ class ToolkitApplication : Application() {
     private fun initToolkit() {
         val awConfig = AWritableLogConfig(saveLevel = LOG_LEVEL_D, logPath = "${this.filesDir}${File.separator}ToolKit")
         val log = AWritableLog()
-        val config = ALogConfig(BuildConfig.DEBUG, AWritableLog(), extra = awConfig)
+        val config = ALogConfig(BuildConfig.DEBUG, log, extra = awConfig)
         ALogUtil.init(this, config)
 
         initAPermission(this, log)
