@@ -5,22 +5,18 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.provider.Settings
 import androidx.core.content.ContextCompat
+import androidx.datastore.preferences.core.intPreferencesKey
 import com.atoolkit.common.ILog
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.lang.ref.WeakReference
 
-/**
- * 权限申请时的request code，当页面使用onActivityResult或
- */
-const val APERMISSION_REQUEST_CODE = 1000
-const val APERMISSION_RESULT_CODE = 1001
-const val APERMISSION_DATA_GRANTED = "apermission_granted_list"
-const val APERMISSION_DATA_DENIED = "apermission_denied_list"
 internal const val TAG = "APermission"
 
-// 是不是对权限逐个申请的标识，在intent中传递使用
-internal const val IS_ONEBYONE_FLAG = "permission_is_onebyone"
 internal lateinit var application: Context
 internal var isInited = false
 internal var logger: ILog? = null
@@ -63,17 +59,35 @@ fun isPermissionGranted(permission: String): Boolean {
 }
 
 /**
- * Description: 检查该权限是不是用户已经永久拒绝了
+ * Description: 检查该权限是不是用户已经永久拒绝了；Android 11及以上系统，申请过权限且用户拒绝了，则认为是永远拒绝了，
+ * 官方解释是app安装生命周期内用具拒绝超过1次就对应是"拒绝后不再提醒"，此时再申请权限也不会弹出权限弹窗。官方解释如下：
+ * At the same time, your app should respect the user's decision to deny a permission. Starting in Android 11 (API level 30),
+ * if the user taps Deny for a specific permission more than once during your app's lifetime of installation on a device,
+ * the user doesn't see the system permissions dialog if your app requests that permission again.
+ * The user's action implies "don't ask again." On previous versions, users saw the system permissions dialog each time
+ * your app requested a permission, unless they had previously selected a "don't ask again" checkbox or option.
+ *
  * Author: summer
+ *
  */
-fun checkPermissionIsAlwaysDeny(activity: Activity, permission: String): Boolean {
+fun isPermissionAlwaysDenied(activity: Activity, permission: String): Boolean {
     val hasPermission = isPermissionGranted(permission)
     if (hasPermission) {
         // 如果已经被授权该权限，则返回false
         return false
     }
-    // 被拒绝该权限 && 需要说明理由（点击了拒绝后不再提醒）
-    return activity.shouldShowRequestPermissionRationale(permission)
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        // Android 11及以上，申请过，且用户拒绝过该权限，即为不再提醒；
+        runBlocking {
+            application.permissionDataStore.data.map {
+                (it[intPreferencesKey("$KEY_PREFIX$permission$REQUEST_FLAG_SUFFIX")]
+                    ?: FLAG_PERMISSION_NEVER_REQUEST) == FLAG_PERMISSION_REQUESTED_DENIED
+            }.first()
+        }
+    } else {
+        // 被拒绝该权限 && 不需要需要说明理由（点击了拒绝后不再提醒）
+        !activity.shouldShowRequestPermissionRationale(permission)
+    }
 }
 
 @JvmOverloads

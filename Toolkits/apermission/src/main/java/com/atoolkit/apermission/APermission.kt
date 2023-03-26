@@ -6,7 +6,7 @@ package com.atoolkit.apermission
  * Date: 2023/3/20 19:41
  * LastModifyTime:
  */
-data class ExplanationData(
+internal data class ExplanationData(
     val explainTitle: String, // 解释标题
     val explainMsg: String, // 解释信息内容
     val rightText: String, // 右侧按钮文字
@@ -19,9 +19,10 @@ data class ExplanationData(
  * Date: 2023/3/20 19:42
  * LastModifyTime:
  */
-data class PermissionData(
-    val permissions: Array<String>, // 待申请的权限
-    val isAbort: Boolean // 如果该权限不拒绝后，时候还继续申请后续的权限（如果有的话），此字段只有在单权限申请模式下有效
+internal data class PermissionData(
+    val permissions: Array<String>, // 待申请的权限列表，该列表中的权限应该是相关联的权限，是同一个权限组的权限；
+    val isAbort: Boolean, // 如果该权限不拒绝后，时候还继续申请后续的权限（如果有的话），此字段只有在单权限申请模式下有效
+    val nextTimeCanRequestAfterDeny: Long = APERMISSION_DEFAULT_NOT_REQUEST_DURATION //权限不拒绝后，下次可再次申请的时间间隔
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

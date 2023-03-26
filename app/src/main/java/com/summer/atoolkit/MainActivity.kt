@@ -1,8 +1,12 @@
 package com.summer.atoolkit
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.atoolkit.alog.ALogUtil
+import com.atoolkit.apermission.APERMISSION_DATA_DENIED
+import com.atoolkit.apermission.APERMISSION_DATA_GRANTED
+import com.atoolkit.apermission.APERMISSION_RESULT_CODE
 import com.atoolkit.apermission.APermission
 import com.atoolkit.apermission.IPermissionCallback
 import com.atoolkit.apermission.handlePermissions
@@ -27,16 +31,39 @@ class MainActivity : AppCompatActivity() {
 //        testLog()
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == APERMISSION_RESULT_CODE) {
+            data?.let {
+                val grantedList = it.getStringArrayExtra(APERMISSION_DATA_GRANTED)
+                val deniedList = it.getStringArrayExtra(APERMISSION_DATA_DENIED)
+                ALogUtil.v(msg = "onActivityResult granted permissions:")
+                if (grantedList != null) {
+                    for (permission in grantedList) {
+                        ALogUtil.v(msg = permission)
+                    }
+                }
+
+                ALogUtil.w(msg = "onActivityResult denied permissions:")
+                if (deniedList != null) {
+                    for (permission in deniedList) {
+                        ALogUtil.w(msg = permission)
+                    }
+                }
+            }
+        }
+    }
+
     private fun requestPermissions() {
         val permissions = buildPermissions()
         handlePermissions(this, permissions, object : IPermissionCallback {
             override fun onPermissionResult(granted: List<String>, denied: List<String>) {
-                ALogUtil.v(msg = "granted permissions:")
+                ALogUtil.v(msg = "callback granted permissions:")
                 for (permission in granted) {
                     ALogUtil.v(msg = permission)
                 }
 
-                ALogUtil.w(msg = "denied permissions:")
+                ALogUtil.w(msg = "callback denied permissions:")
                 for (permission in denied) {
                     ALogUtil.w(msg = permission)
                 }

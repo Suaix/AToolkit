@@ -2,7 +2,7 @@ package com.atoolkit.apermission.uistate
 
 import com.atoolkit.apermission.PermissionData
 
-sealed interface APermissionUiState {
+internal sealed interface APermissionUiState {
     object InitUiState : APermissionUiState
 
     data class ResultUiState(

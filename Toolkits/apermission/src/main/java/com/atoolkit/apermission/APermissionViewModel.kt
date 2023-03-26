@@ -1,23 +1,24 @@
 package com.atoolkit.apermission
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.atoolkit.apermission.uistate.APermissionUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-
+import kotlinx.coroutines.launch
 
 /**
  * Author:summer
  * Time: 2023/3/25 11:05
  * Description: APermissionViewModel是APermissionActivity的ViewModel，负责权限申请逻辑处理
  */
-class APermissionViewModel : ViewModel() {
-    private var currentPermission: APermission? = null
+internal class APermissionViewModel : ViewModel() {
     private var grantedPermissions = mutableListOf<String>()
     private var deniedPermissions = mutableListOf<String>()
     private var waitRequestPermissions = mutableListOf<APermission>()
     private val _mPermissionUiState = MutableStateFlow<APermissionUiState>(APermissionUiState.InitUiState)
+    private val repository = APermissionRepository(APermissionLocalDataSource())
     val uiState = _mPermissionUiState.asStateFlow()
 
     fun start() {
@@ -36,8 +37,14 @@ class APermissionViewModel : ViewModel() {
         result.forEach { (key, value) ->
             if (value) {
                 grantedPermissions.add(key)
+                viewModelScope.launch {
+                    repository.savePermissionRequestFlag(key, FLAG_PERMISSION_REQUESTED_GRANTED)
+                }
             } else {
                 deniedPermissions.add(key)
+                viewModelScope.launch {
+                    repository.savePermissionRequestFlag(key, FLAG_PERMISSION_REQUESTED_DENIED)
+                }
                 hasDenied = true
             }
         }
@@ -142,11 +149,20 @@ class APermissionViewModel : ViewModel() {
             val pm = ap.getPermissions()
             pm.forEach { permission ->
                 when {
+                    // 判断被授予的权限
                     isPermissionGranted(permission) -> {
                         logger?.v(tag = TAG, msg = "$permission has granted")
                         grantedPermissions.add(permission)
                     }
-                    // TODO: 判断被拒绝的权限
+                    // 判断被拒绝的权限
+                    repository.getPermissionRequestFlag(
+                        permission,
+                        FLAG_PERMISSION_NEVER_REQUEST
+                    ) == FLAG_PERMISSION_REQUESTED_DENIED -> {
+                        logger?.v(tag = TAG, msg = "$permission has denied")
+                        deniedPermissions.add(permission)
+                    }
+                    // 其他是待申请的权限
                     else -> {
                         logger?.v(tag = TAG, msg = "$permission wait request")
                         waitRequestPermissions.add(ap)
