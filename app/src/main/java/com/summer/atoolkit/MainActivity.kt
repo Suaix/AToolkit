@@ -9,6 +9,7 @@ import com.atoolkit.apermission.APERMISSION_DATA_GRANTED
 import com.atoolkit.apermission.APERMISSION_RESULT_CODE
 import com.atoolkit.apermission.APermission
 import com.atoolkit.apermission.IPermissionCallback
+import com.atoolkit.apermission.goToPermissionSetting
 import com.atoolkit.apermission.handlePermissions
 import com.summer.atoolkit.databinding.ActivityMainBinding
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -23,6 +24,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(mBinding.root)
         mBinding.btSinglePermission.setOnClickListener {
             requestPermissions()
+        }
+        mBinding.goToPermissionSetting.setOnClickListener {
+            goToPermissionSetting()
         }
     }
 

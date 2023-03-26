@@ -46,6 +46,7 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 
 4. 检查是否授予了对应权限，请使用`isPermissionGranted(permission: String)`进行检查。
 5. 检查权限是否是"拒绝后不再提醒"，请使用`isPermissionAlwaysDenied(activity: Activity, permission: String)`进行检查。
+6. 跳转系统权限设置页，请使用`goToPermissionSetting()`，华为、小米和OPPO会跳转到权限详情页，其他的默认跳转到应用信息详情页。
 
 ### 备注信息
 api < 6.0

@@ -13,4 +13,10 @@
             android:layout_height="wrap_content"
             android:text="测试权限申请" />
 
+    <Button
+            android:id="@+id/go_to_permission_setting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转到系统权限设置页" />
+
 </LinearLayout>

@@ -2,9 +2,11 @@ package com.atoolkit.apermission
 
 import android.Manifest
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.ContextCompat
@@ -110,4 +112,44 @@ fun handlePermissions(
     // 组装数据，调起权限申请页面
     val intent = Intent(context, APermissionActivity::class.java)
     context.startActivityForResult(intent, APERMISSION_REQUEST_CODE)
+}
+
+/**
+ * Description: 跳转到权限设置页，目前支持华为、小米和oppo，其他品牌使用通用设置
+ * Author: summer
+ */
+fun goToPermissionSetting() {
+    val intent = Intent()
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    intent.putExtra("packageName", application.packageName)
+    when (Build.MANUFACTURER.lowercase()) {
+        "huawei" -> {
+            // 华为
+            val comp = ComponentName("com.huawei.systemmanager", "com.huawei.permissionmanager.ui.MainActivity")
+            intent.component = comp
+        }
+        "xiaomi" -> {
+            val comp =
+                ComponentName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity")
+            intent.component = comp
+        }
+        "oppo" -> {
+            val comp = ComponentName(
+                "com.coloros.securitypermission",
+                "com.coloros.securitypermission.permission.PermissionAppAllPermissionActivity"
+            )
+            intent.component = comp
+        }
+        else -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                intent.data = Uri.fromParts("package", application.packageName, null)
+            } else {
+                intent.action = Intent.ACTION_VIEW
+                intent.setClassName("com.android.settings", "com.android.settings.InstalledAppDetails")
+                intent.putExtra("com.android.setting.ApplicationPkgName", application.packageName)
+            }
+        }
+    }
+    application.startActivity(intent)
 }
