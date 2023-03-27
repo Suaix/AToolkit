@@ -55,7 +55,7 @@ fun isPermissionGranted(permission: String): Boolean {
         }
         else -> {
             // 其他权限
-            ContextCompat.checkSelfPermission(application, permission) == PackageManager.PERMISSION_GRANTED
+             ContextCompat.checkSelfPermission(application, permission) == PackageManager.PERMISSION_GRANTED
         }
     }
 }
@@ -141,14 +141,8 @@ fun goToPermissionSetting() {
             intent.component = comp
         }
         else -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                intent.data = Uri.fromParts("package", application.packageName, null)
-            } else {
-                intent.action = Intent.ACTION_VIEW
-                intent.setClassName("com.android.settings", "com.android.settings.InstalledAppDetails")
-                intent.putExtra("com.android.setting.ApplicationPkgName", application.packageName)
-            }
+            intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            intent.data = Uri.fromParts("package", application.packageName, null)
         }
     }
     application.startActivity(intent)
