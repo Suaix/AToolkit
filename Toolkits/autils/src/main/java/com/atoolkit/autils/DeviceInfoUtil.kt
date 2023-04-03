@@ -8,8 +8,14 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.provider.Settings
 import android.telephony.TelephonyManager
+import android.util.DisplayMetrics
+import android.view.WindowManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.net.NetworkInterface
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Description: 设备信息工具，用来提供各种与设备相关的信息，如imei\androidId\mac地址等
@@ -21,12 +27,16 @@ import java.net.NetworkInterface
 private var imei: String? = null
 private var androidId: String? = null
 private var mac: String? = null
-private var wifiMacAddress: String? = null
-private var wifiSSID: String? = null
+private var bssid: String? = null
+private var ssid: String? = null
 private var phoneModel: String? = null
 private var phoneBrand: String? = null
 private var phoneManufacturer: String? = null
 private var phoneDevice: String? = null
+private var screenWidth: Int? = null
+private var screenHeight: Int? = null
+private var statusBarHeight: Int? = null
+private var navigationBarHeight: Int? = null
 
 /**
  * Description: 获取设备imei号。
@@ -77,7 +87,9 @@ fun getImei(): String {
         }
         if (useCache) {
             runBlocking {
-                writeValue(KEY_DEVICE_IMEI, imei as String)
+                withContext(Dispatchers.IO) {
+                    writeValue(KEY_DEVICE_IMEI, imei as String)
+                }
             }
         }
         imei as String
@@ -103,7 +115,9 @@ fun getAndroidId(): String {
         androidId = tmpAndroidId ?: ""
         if (useCache) {
             runBlocking {
-                writeValue(KEY_DEVICE_ANDROID_ID, androidId as String)
+                withContext(Dispatchers.IO) {
+                    writeValue(KEY_DEVICE_ANDROID_ID, androidId as String)
+                }
             }
         }
         androidId as String
@@ -115,7 +129,6 @@ fun getAndroidId(): String {
  * Author: summer
  */
 fun getMac(): String {
-    // TODO: mac等信息是否会变化，以此来判断是否需要使用本地缓存
     if (mac == null) {
         initMac()
     }
@@ -126,63 +139,220 @@ fun getMac(): String {
     return mac as String
 }
 
-fun getWifiMacAddress(): String {
-    if (wifiMacAddress == null) {
+/**
+ * Description: 获取链接wifi的bssid标识
+ * Author: summer
+ */
+fun getBSSID(): String {
+    if (bssid == null) {
         initMac()
     }
     // 二次检查
-    if (wifiMacAddress == null) {
-        wifiMacAddress = ""
+    if (bssid == null) {
+        bssid = ""
     }
-    return wifiMacAddress as String
+    return bssid as String
 }
 
-fun getWifiSSID(): String {
-    if (wifiSSID == null) {
+/**
+ * Description: 获取链接wifi的ssid
+ * Author: summer
+ */
+fun getSSID(): String {
+    if (ssid == null) {
         initMac()
     }
-    if (wifiSSID == null) {
-        wifiSSID = ""
+    if (ssid == null) {
+        ssid = ""
     }
-    return wifiSSID as String
+    return ssid as String
 }
 
 private fun initMac() {
-    val wm = application.getSystemService(Context.WIFI_SERVICE) as WifiManager
-    if (application.checkSelfPermission(Manifest.permission.ACCESS_WIFI_STATE) == PackageManager.PERMISSION_GRANTED &&
-            application.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-    ) {
-        wifiMacAddress = wm.connectionInfo.bssid
-        wifiSSID = wm.connectionInfo.ssid
-    } else {
-        wifiMacAddress = ""
-        wifiSSID = ""
-    }
-    // 7.0及以上系统使用如下方法获取，7.0之前的暂不支持
-    val nif = NetworkInterface.getNetworkInterfaces()
-    nif?.let {
-        while (it.hasMoreElements()) {
-            val element = it.nextElement()
-            if ("wlan0" == element.name) {
-                val address = element.hardwareAddress
-                if (address == null || address.isEmpty()) {
-                    continue
-                }
-                val buf = StringBuffer()
-                for (b in address) {
-                    buf.append(String.format("%02X", b))
-                }
-                if (buf.isNotEmpty()) {
-                    buf.deleteCharAt(buf.length - 1)
-                }
-                mac = buf.toString()
-                break
-            }
+    try {
+        val wm = application.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        if (application.checkSelfPermission(Manifest.permission.ACCESS_WIFI_STATE) == PackageManager.PERMISSION_GRANTED &&
+                application.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        ) {
+            bssid = wm.connectionInfo.bssid
+            ssid = wm.connectionInfo.ssid
+        } else {
+            bssid = ""
+            ssid = ""
         }
-        if (mac == null) {
+        // 7.0及以上系统使用如下方法获取，7.0之前的暂不支持
+        val nif = NetworkInterface.getNetworkInterfaces()
+        nif?.let {
+            while (it.hasMoreElements()) {
+                val element = it.nextElement()
+                if ("wlan0" == element.name) {
+                    val address = element.hardwareAddress
+                    if (address == null || address.isEmpty()) {
+                        continue
+                    }
+                    val buf = StringBuffer()
+                    for (b in address) {
+                        buf.append(String.format("%02X", b))
+                    }
+                    if (buf.isNotEmpty()) {
+                        buf.deleteCharAt(buf.length - 1)
+                    }
+                    mac = buf.toString()
+                    break
+                }
+            }
+            if (mac == null) {
+                mac = ""
+            }
+        } ?: run {
             mac = ""
         }
-    } ?: run {
+    } catch (e: Exception) {
+        e.printStackTrace()
         mac = ""
+        bssid = ""
+        ssid = ""
+    }
+}
+
+/**
+ * Description: 获取手机型号，即[Build.MODEL]
+ * Author: summer
+ */
+fun getPhoneModel(): String {
+    return phoneModel ?: run {
+        val tempModel = if (useCache) readValue(KEY_DEVICE_MODEL, INTERNAL_EMPTY_VALUE) else INTERNAL_EMPTY_VALUE
+        if (tempModel != INTERNAL_EMPTY_VALUE) {
+            phoneModel = tempModel
+        } else {
+            phoneModel = Build.MODEL
+            if (useCache) {
+                runBlocking {
+                    withContext(Dispatchers.IO) {
+                        writeValue(KEY_DEVICE_MODEL, phoneModel)
+                    }
+                }
+            }
+        }
+        phoneModel as String
+    }
+}
+
+/**
+ * Description: 获取手机品牌，即[Build.BRAND]
+ * Author: summer
+ */
+fun getPhoneBrand(): String {
+    return phoneBrand ?: run {
+        val tempBrand = if (useCache) readValue(KEY_DEVICE_BRAND, INTERNAL_EMPTY_VALUE) else INTERNAL_EMPTY_VALUE
+        if (tempBrand != INTERNAL_EMPTY_VALUE) {
+            phoneBrand = tempBrand
+        } else {
+            phoneBrand = Build.BRAND
+            if (useCache) {
+                runBlocking {
+                    withContext(Dispatchers.IO) {
+                        writeValue(KEY_DEVICE_BRAND, phoneBrand)
+                    }
+                }
+            }
+        }
+        phoneBrand as String
+    }
+}
+
+/**
+ * Description: 获取手机制造商，即[Build.MANUFACTURER]
+ * Author: summer
+ */
+fun getPhoneManufacturer(): String {
+    return phoneManufacturer ?: run {
+        val tempManufacturer =
+            if (useCache) readValue(KEY_DEVICE_MANUFACTURER, INTERNAL_EMPTY_VALUE) else INTERNAL_EMPTY_VALUE
+        if (tempManufacturer != INTERNAL_EMPTY_VALUE) {
+            phoneManufacturer = tempManufacturer
+        } else {
+            phoneManufacturer = Build.MANUFACTURER
+            if (useCache) {
+                runBlocking {
+                    withContext(Dispatchers.IO) {
+                        writeValue(KEY_DEVICE_MANUFACTURER, phoneManufacturer)
+                    }
+                }
+            }
+        }
+        phoneManufacturer as String
+    }
+}
+
+/**
+ * Description: 获取设备外观设置名称，即[Build.DEVICE]
+ * Author: summer
+ */
+fun getPhoneDevice(): String {
+    return phoneDevice ?: run {
+        val tempDevice = if (useCache) readValue(KEY_DEVICE_DEVICE, INTERNAL_EMPTY_VALUE) else INTERNAL_EMPTY_VALUE
+        if (tempDevice != INTERNAL_EMPTY_VALUE) {
+            phoneDevice = tempDevice
+        } else {
+            phoneDevice = Build.DEVICE
+            if (useCache) {
+                runBlocking {
+                    withContext(Dispatchers.IO) {
+                        writeValue(KEY_DEVICE_DEVICE, phoneDevice)
+                    }
+                }
+            }
+        }
+        phoneDevice as String
+    }
+}
+
+/**
+ * Description: 获取屏幕宽度，单位：px
+ * Author: summer
+ */
+fun getScreenWidth(): Int {
+    return screenWidth ?: run {
+        initScreenInfo()
+        screenWidth as Int
+    }
+}
+
+/**
+ * Description: 获取屏幕高度，单位：px
+ * Author: summer
+ */
+fun getScreenHeight(): Int {
+    return screenHeight ?: run {
+        initScreenInfo()
+        screenHeight as Int
+    }
+}
+
+/**
+ * Description: 初始化屏幕信息
+ * Author: summer
+ */
+private fun initScreenInfo() {
+    val wm = application.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        val bounds = wm.currentWindowMetrics.bounds
+        val width = bounds.width()
+        val height = bounds.height()
+        screenWidth = min(width, height)
+        screenHeight = max(width, height)
+    } else {
+        val metrics = DisplayMetrics()
+        wm.defaultDisplay.getMetrics(metrics)
+        screenWidth = min(metrics.widthPixels, metrics.heightPixels)
+        screenHeight = max(metrics.widthPixels, metrics.heightPixels)
+    }
+}
+
+fun getStatusBarHeight(): Int {
+    return statusBarHeight ?: run {
+        // TODO:  
+        statusBarHeight as Int
     }
 }
