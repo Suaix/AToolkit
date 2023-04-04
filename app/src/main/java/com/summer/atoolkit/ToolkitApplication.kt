@@ -7,6 +7,7 @@ import com.atoolkit.alog.LOG_LEVEL_D
 import com.atoolkit.alog.write.AWritableLog
 import com.atoolkit.alog.write.AWritableLogConfig
 import com.atoolkit.apermission.initAPermission
+import com.atoolkit.autils.initAUtils
 import java.io.File
 
 
@@ -29,6 +30,7 @@ class ToolkitApplication : Application() {
         ALogUtil.init(this, config)
 
         initAPermission(this, log)
+        initAUtils(this, log, false)
     }
 
 }

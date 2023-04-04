@@ -11,6 +11,22 @@ import com.atoolkit.apermission.APermission
 import com.atoolkit.apermission.IPermissionCallback
 import com.atoolkit.apermission.goToPermissionSetting
 import com.atoolkit.apermission.handlePermissions
+import com.atoolkit.autils.dp2Px
+import com.atoolkit.autils.getAndroidId
+import com.atoolkit.autils.getBSSID
+import com.atoolkit.autils.getImei
+import com.atoolkit.autils.getMac
+import com.atoolkit.autils.getNavigationBarHeight
+import com.atoolkit.autils.getPhoneBrand
+import com.atoolkit.autils.getPhoneDevice
+import com.atoolkit.autils.getPhoneManufacturer
+import com.atoolkit.autils.getPhoneModel
+import com.atoolkit.autils.getSSID
+import com.atoolkit.autils.getScreenHeight
+import com.atoolkit.autils.getScreenWidth
+import com.atoolkit.autils.getStatusBarHeight
+import com.atoolkit.autils.px2Dp
+import com.atoolkit.autils.sp2Px
 import com.summer.atoolkit.databinding.ActivityMainBinding
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -18,9 +34,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+    lateinit var mBinding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val mBinding = ActivityMainBinding.inflate(layoutInflater)
+        mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
         mBinding.btSinglePermission.setOnClickListener {
             requestPermissions()
@@ -28,11 +45,28 @@ class MainActivity : AppCompatActivity() {
         mBinding.goToPermissionSetting.setOnClickListener {
             goToPermissionSetting()
         }
+        testDeviceInfo()
     }
 
-    override fun onStart() {
-        super.onStart()
-//        testLog()
+    private fun testDeviceInfo() {
+        val sb = StringBuilder()
+        sb.append("imei = ${getImei()}\n")
+                .append("androidId = ${getAndroidId()}\n")
+                .append("mac = ${getMac()}\n")
+                .append("bssid = ${getBSSID()}\n")
+                .append("ssid = ${getSSID()}\n")
+                .append("phoneModel = ${getPhoneModel()}\n")
+                .append("phoneBrand = ${getPhoneBrand()}\n")
+                .append("phoneManufacturer = ${getPhoneManufacturer()}\n")
+                .append("phoneDevice = ${getPhoneDevice()}\n")
+                .append("screenWidth = ${getScreenWidth()}\n")
+                .append("screenHeight = ${getScreenHeight()}\n")
+                .append("statusBarHeight = ${getStatusBarHeight()}\n")
+                .append("navigationBarHeight = ${getNavigationBarHeight()}\n")
+                .append("100dp = ${dp2Px(100F)}px\n")
+                .append("12sp = ${sp2Px(12F)}px\n")
+                .append("100px = ${px2Dp(100F)}dp\n")
+        mBinding.tvDeviceInfo.text = sb.toString()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

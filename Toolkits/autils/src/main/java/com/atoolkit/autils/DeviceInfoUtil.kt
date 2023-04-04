@@ -9,6 +9,8 @@ import android.os.Build
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.util.DisplayMetrics
+import android.util.TypedValue
+import android.view.WindowInsets
 import android.view.WindowManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -350,9 +352,75 @@ private fun initScreenInfo() {
     }
 }
 
+@SuppressLint("InternalInsetResource", "DiscouragedApi")
 fun getStatusBarHeight(): Int {
     return statusBarHeight ?: run {
-        // TODO:  
+        statusBarHeight = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val wm = application.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val windowInsets = wm.currentWindowMetrics.windowInsets
+            val insets = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars())
+            val insetHeight = insets.bottom - insets.top
+            aLog?.v(TAG, "status bar height by insetHeight=$insetHeight")
+            insetHeight
+        } else {
+            val resourceId = application.resources.getIdentifier("status_bar_height", "dimen", "android")
+            if (resourceId > 0) {
+                application.resources.getDimensionPixelSize(resourceId)
+            } else {
+                50
+            }
+        }
         statusBarHeight as Int
     }
+}
+
+/**
+ * Description: 获取导航栏的高度
+ * Author: summer
+ */
+@SuppressLint("InternalInsetResource", "DiscouragedApi")
+fun getNavigationBarHeight(): Int {
+    return navigationBarHeight ?: run {
+        navigationBarHeight = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val wm = application.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val windowInsets = wm.currentWindowMetrics.windowInsets
+            val insets = windowInsets.getInsets(WindowInsets.Type.navigationBars())
+            val insetHeight = insets.bottom - insets.top
+            aLog?.v(TAG, "navigation bar height by insetHeight = $insetHeight")
+            insetHeight
+        } else {
+            val resourceId = application.resources.getIdentifier("navigation_bar_height", "dimen", "android")
+            if (resourceId > 0) {
+                application.resources.getDimensionPixelSize(resourceId)
+            } else {
+                0
+            }
+        }
+        navigationBarHeight as Int
+    }
+}
+
+/**
+ * Description: dp转px，返回Float，使用Int的可以调用方转化下类型
+ * Author: summer
+ */
+fun dp2Px(dpValue: Float): Float {
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, application.resources.displayMetrics)
+}
+
+/**
+ * Description: sp转px，返回Float，使用Int的可以调用方转化下类型
+ * Author: summer
+ */
+fun sp2Px(spValue: Float): Float {
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, spValue, application.resources.displayMetrics)
+}
+
+/**
+ * Description: px转dp，返回Float，使用Int的可以调用方转化下类型
+ * Author: summer
+ */
+fun px2Dp(pxValue: Float): Float {
+    val density = application.resources.displayMetrics.density
+    return pxValue / density + 0.5F
 }

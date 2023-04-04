@@ -40,6 +40,7 @@ dependencies {
     implementation project(":Toolkits:alog")
     implementation project(":Toolkits:apermission")
     implementation project(":Toolkits:acommon")
+    implementation project(":Toolkits:autils")
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
