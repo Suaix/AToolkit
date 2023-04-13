@@ -359,7 +359,8 @@ fun getStatusBarHeight(): Int {
             val wm = application.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             val windowInsets = wm.currentWindowMetrics.windowInsets
             val insets = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars())
-            val insetHeight = insets.bottom - insets.top
+            aLog?.v(TAG, "insets = ${insets.toString()}")
+            val insetHeight = insets.bottom + insets.top
             aLog?.v(TAG, "status bar height by insetHeight=$insetHeight")
             insetHeight
         } else {
@@ -385,15 +386,20 @@ fun getNavigationBarHeight(): Int {
             val wm = application.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             val windowInsets = wm.currentWindowMetrics.windowInsets
             val insets = windowInsets.getInsets(WindowInsets.Type.navigationBars())
-            val insetHeight = insets.bottom - insets.top
+            aLog?.v(TAG, "navigation insets = ${insets.toString()}")
+            val insetHeight = insets.bottom + insets.top
             aLog?.v(TAG, "navigation bar height by insetHeight = $insetHeight")
             insetHeight
         } else {
-            val resourceId = application.resources.getIdentifier("navigation_bar_height", "dimen", "android")
-            if (resourceId > 0) {
-                application.resources.getDimensionPixelSize(resourceId)
-            } else {
+            if (!isNavigationBarShow()){
                 0
+            } else {
+                val resourceId = application.resources.getIdentifier("navigation_bar_height", "dimen", "android")
+                if (resourceId > 0) {
+                    application.resources.getDimensionPixelSize(resourceId)
+                } else {
+                    0
+                }
             }
         }
         navigationBarHeight as Int
@@ -420,7 +426,7 @@ fun sp2Px(spValue: Float): Float {
  * Description: px转dp，返回Float，使用Int的可以调用方转化下类型
  * Author: summer
  */
-fun px2Dp(pxValue: Float): Float {
+fun px2Dp(pxValue: Float): Int {
     val density = application.resources.displayMetrics.density
-    return pxValue / density + 0.5F
+    return (pxValue / density + 0.5).toInt()
 }

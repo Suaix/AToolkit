@@ -3,6 +3,9 @@ package com.summer.atoolkit
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.LinearLayout.LayoutParams
 import com.atoolkit.alog.ALogUtil
 import com.atoolkit.apermission.APERMISSION_DATA_DENIED
 import com.atoolkit.apermission.APERMISSION_DATA_GRANTED
@@ -25,6 +28,17 @@ import com.atoolkit.autils.getSSID
 import com.atoolkit.autils.getScreenHeight
 import com.atoolkit.autils.getScreenWidth
 import com.atoolkit.autils.getStatusBarHeight
+import com.atoolkit.autils.goBluetoothSetting
+import com.atoolkit.autils.goLocationSetting
+import com.atoolkit.autils.goNFCSetting
+import com.atoolkit.autils.goNotificationSetting
+import com.atoolkit.autils.goWifiSetting
+import com.atoolkit.autils.isBluetoothEnabled
+import com.atoolkit.autils.isLocationEnabled
+import com.atoolkit.autils.isNFCEnabled
+import com.atoolkit.autils.isNavigationBarShow
+import com.atoolkit.autils.isNotificationEnabled
+import com.atoolkit.autils.isWifiEnabled
 import com.atoolkit.autils.px2Dp
 import com.atoolkit.autils.sp2Px
 import com.summer.atoolkit.databinding.ActivityMainBinding
@@ -67,6 +81,45 @@ class MainActivity : AppCompatActivity() {
                 .append("12sp = ${sp2Px(12F)}px\n")
                 .append("100px = ${px2Dp(100F)}dp\n")
         mBinding.tvDeviceInfo.text = sb.toString()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        testPhoneStatus()
+    }
+
+    private val phoneStatusList = mutableListOf<PhoneStatusInfo>()
+    private fun testPhoneStatus() {
+        phoneStatusList.clear()
+        mBinding.llContainer.removeAllViews()
+        val temp = listOf(
+            PhoneStatusInfo("底部导航栏是否展示：${isNavigationBarShow()}") {},
+            PhoneStatusInfo("App通知是否可用：${isNotificationEnabled()}") {
+                goNotificationSetting()
+            },
+            PhoneStatusInfo("定位是否可用：${isLocationEnabled()}") {
+                goLocationSetting()
+            },
+            PhoneStatusInfo("WIFI是否开启：${isWifiEnabled()}") {
+                goWifiSetting()
+            },
+            PhoneStatusInfo("蓝牙是否开启：${isBluetoothEnabled()}") {
+                goBluetoothSetting()
+            },
+            PhoneStatusInfo("NFC是否可用：${isNFCEnabled()}") {
+                goNFCSetting()
+            }
+        )
+        phoneStatusList.addAll(temp)
+        phoneStatusList.forEach { phoneStatus ->
+            val button = Button(this)
+            button.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            button.text = phoneStatus.value
+            button.setOnClickListener {
+                phoneStatus.function.invoke()
+            }
+            mBinding.llContainer.addView(button)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
