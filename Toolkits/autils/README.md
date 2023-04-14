@@ -1,4 +1,9 @@
 ## AUtils工具类能力
+### 初始化
+调用`AUtils`里的`initAUtils(context, log, isUseLocalCache)`初始化工具，其中第三个参数`isUseLocalCache`指代
+是否使用本地缓存，对于一些隐私合规项信息（如设备信息imei、androidId、手机型号等）为了避免重复获取，再获取到一次后是否
+缓存到本地，默认为使用缓存（会使用`DataStore`进行`key-value`存储）。除此之外也会进行内存缓存，获取一次之后下次使用会
+优先使用内存缓存数据，没有内存缓存时会尝试获取本地缓存，最后才会调用对应api获取。从而避免设备等敏感信息频繁获取。
 
 `DeviceInfoUtil`
     | `getImei()` 获取设备imei号，Android10及以上系统获取为空；

@@ -70,26 +70,38 @@ fun goNotificationSetting() {
     val intent = Intent()
     intent.apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        data = Uri.parse("package:${application.packageName}")
-        action = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // 26及以上系统，直接跳转到通知设置页面
-            Settings.ACTION_APP_NOTIFICATION_SETTINGS
+            action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+            putExtra(Settings.EXTRA_APP_PACKAGE, application.packageName)
         } else {
             // 26以下系统，跳转到应用设置页
-            Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            data = Uri.parse("package:${application.packageName}")
         }
     }
     application.startActivity(intent)
 }
 
 /**
- * Description: 判断手机定位是否开启了
+ * Description: 判断手机定位是否开启了，在 19<API<28 时会检查[LocationManager.GPS_PROVIDER]和[LocationManager.NETWORK_PROVIDER]
+ * 是否可用，有一个可用即返回true。
  * Author: summer
  * @return Boolean， true：开启了，false：未开启
  */
 fun isLocationEnabled(): Boolean {
     val locationManager = application.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     return LocationManagerCompat.isLocationEnabled(locationManager)
+}
+
+/**
+ * Description: 手机gps定位是否打开了
+ * Author: summer
+ * @return Boolean， true：打开了，false：未打开
+ */
+fun isGpsEnabled(): Boolean {
+    val locationManager = application.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 }
 
 /**
