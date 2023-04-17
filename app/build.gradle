@@ -41,6 +41,7 @@ dependencies {
     implementation project(":Toolkits:apermission")
     implementation project(":Toolkits:acommon")
     implementation project(":Toolkits:autils")
+    implementation project(":Toolkits:astorage")
 
     implementation "androidx.core:core-ktx:$core_ktx_version"
     implementation "androidx.appcompat:appcompat:$appcompat_version"

@@ -23,6 +23,12 @@
                 android:layout_height="wrap_content"
                 android:text="跳转到系统权限设置页" />
 
+        <Button
+                android:id="@+id/bt_file_utils"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="测试FileUtils"/>
+
         <TextView
                 android:id="@+id/tv_device_info"
                 android:layout_width="match_parent"

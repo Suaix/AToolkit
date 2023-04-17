@@ -4,8 +4,8 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.LinearLayout.LayoutParams
+import android.widget.Toast
 import com.atoolkit.alog.ALogUtil
 import com.atoolkit.apermission.APERMISSION_DATA_DENIED
 import com.atoolkit.apermission.APERMISSION_DATA_GRANTED
@@ -14,6 +14,11 @@ import com.atoolkit.apermission.APermission
 import com.atoolkit.apermission.IPermissionCallback
 import com.atoolkit.apermission.goToPermissionSetting
 import com.atoolkit.apermission.handlePermissions
+import com.atoolkit.astorage.createFile
+import com.atoolkit.astorage.deleteFileByPath
+import com.atoolkit.astorage.renameFile
+import com.atoolkit.astorage.unzipFile
+import com.atoolkit.astorage.zipFile
 import com.atoolkit.autils.dp2Px
 import com.atoolkit.autils.getAndroidId
 import com.atoolkit.autils.getBSSID
@@ -43,9 +48,15 @@ import com.atoolkit.autils.px2Dp
 import com.atoolkit.autils.sp2Px
 import com.summer.atoolkit.databinding.ActivityMainBinding
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
     lateinit var mBinding: ActivityMainBinding
@@ -59,7 +70,73 @@ class MainActivity : AppCompatActivity() {
         mBinding.goToPermissionSetting.setOnClickListener {
             goToPermissionSetting()
         }
+        mBinding.btFileUtils.setOnClickListener {
+            testFileUtils()
+        }
         testDeviceInfo()
+    }
+
+    private fun testFileUtils() {
+        val sb = StringBuilder()
+        // 创建File
+        for (i in 0..3) {
+            val testFile = createFile(this.filesDir.absolutePath + File.separator + "AStorage", "test$i.txt")
+            sb.append("testFile:${testFile?.absolutePath}\n")
+            runBlocking {
+                withContext(Dispatchers.IO) {
+                    val buffer = "This is test content $i".toByteArray()
+                    val outputStream = BufferedOutputStream(FileOutputStream(testFile))
+                    outputStream.write(buffer)
+                    outputStream.close()
+                }
+            }
+        }
+        val rootPath = this.filesDir.absolutePath + File.separator + "AStorage"
+        val renameSuccess =
+            renameFile(rootPath + File.separator + "test3.txt", rootPath + File.separator + "rename_test3.txt")
+        sb.append("renameSuccess: $renameSuccess\n")
+        val tempDirPath = rootPath + File.separator + "android"
+        for (index in 0..3) {
+            val androidFile = if (index < 3) {
+                createFile(tempDirPath, "android$index.java")
+            } else {
+                createFile(tempDirPath + File.separator+"kotlin", "android$index.kotlin")
+            }
+            sb.append("androidFile:${androidFile?.absolutePath}\n")
+            runBlocking {
+                withContext(Dispatchers.IO) {
+                    val buffer = "This is test android content $index".toByteArray()
+                    val outputStream = BufferedOutputStream(FileOutputStream(androidFile))
+                    outputStream.write(buffer)
+                    outputStream.close()
+                }
+            }
+        }
+        val deleteSuccess = deleteFileByPath(tempDirPath + File.separator + "android1.java")
+        sb.append("deleteSuccess:$deleteSuccess\n")
+        mBinding.tvDeviceInfo.text = sb.toString()
+        runBlocking {
+            zipFile(rootPath, rootPath + File.separator + "summer.zip") { isSuccess, msg, file ->
+                runOnUiThread {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "zip file --> isSuccess=$isSuccess, msg=$msg, file=${file?.absolutePath}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            delay(5*1000)
+            val zipFile = File(rootPath + File.separator + "summer.zip")
+            unzipFile(zipFile, rootPath+File.separator+"unzip", false){ isUnzipSuccess, msg ->
+                runOnUiThread {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "unzip file --> isUnzipSuccess=$isUnzipSuccess, msg=$msg",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 
     private fun testDeviceInfo() {
@@ -85,7 +162,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        testPhoneStatus()
+//        testPhoneStatus()
     }
 
     private val phoneStatusList = mutableListOf<PhoneStatusInfo>()
