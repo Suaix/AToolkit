@@ -246,7 +246,6 @@ suspend fun unzipFile(
         val zipInputStream = ZipInputStream(FileInputStream(zipFile))
 
         var zipEntry = zipInputStream.nextEntry
-        var count = 1
         while (zipEntry != null) {
             val entryName = zipEntry.name
             if (entryName?.contains(MAC_IGNORE) == true || entryName?.contains(ILLEGAL_NAME) == true) {

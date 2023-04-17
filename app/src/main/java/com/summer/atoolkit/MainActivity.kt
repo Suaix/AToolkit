@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
         sb.append("deleteSuccess:$deleteSuccess\n")
         mBinding.tvDeviceInfo.text = sb.toString()
         runBlocking {
-            zipFile(rootPath, rootPath + File.separator + "summer.zip") { isSuccess, msg, file ->
+            zipFile(rootPath, this@MainActivity.filesDir.absolutePath + File.separator + "summer.zip") { isSuccess, msg, file ->
                 runOnUiThread {
                     Toast.makeText(
                         this@MainActivity,
@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             delay(5*1000)
-            val zipFile = File(rootPath + File.separator + "summer.zip")
+            val zipFile = File(this@MainActivity.filesDir.absolutePath + File.separator + "summer.zip")
             unzipFile(zipFile, rootPath+File.separator+"unzip", false){ isUnzipSuccess, msg ->
                 runOnUiThread {
                     Toast.makeText(
