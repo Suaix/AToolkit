@@ -59,7 +59,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
-    lateinit var mBinding: ActivityMainBinding
+    private lateinit var mBinding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -115,8 +115,10 @@ class MainActivity : AppCompatActivity() {
         val deleteSuccess = deleteFileByPath(tempDirPath + File.separator + "android1.java")
         sb.append("deleteSuccess:$deleteSuccess\n")
         mBinding.tvDeviceInfo.text = sb.toString()
+        var zipFile: File? = null
         runBlocking {
-            zipFile(rootPath, this@MainActivity.filesDir.absolutePath + File.separator + "summer.zip") { isSuccess, msg, file ->
+            zipFile(rootPath) { isSuccess, msg, file ->
+                zipFile = file
                 runOnUiThread {
                     Toast.makeText(
                         this@MainActivity,
@@ -124,16 +126,18 @@ class MainActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+
             }
             delay(5*1000)
-            val zipFile = File(this@MainActivity.filesDir.absolutePath + File.separator + "summer.zip")
-            unzipFile(zipFile, rootPath+File.separator+"unzip", false){ isUnzipSuccess, msg ->
-                runOnUiThread {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "unzip file --> isUnzipSuccess=$isUnzipSuccess, msg=$msg",
-                        Toast.LENGTH_SHORT
-                    ).show()
+            zipFile?.let {
+                unzipFile(it, isUnzipWithParentDir =  true, isDeleteZipFileAfterUnzipSuccess = true){ isUnzipSuccess, msg ->
+                    runOnUiThread {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "unzip file --> isUnzipSuccess=$isUnzipSuccess, msg=$msg",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
