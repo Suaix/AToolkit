@@ -1,5 +1,7 @@
 package com.atoolkit.astorage
 
+import android.os.Environment
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
@@ -19,6 +21,62 @@ private const val MAC_IGNORE: String = "__MACOSX/"
  * 非法文件，避免解压时被偷换目录，造成文件被覆盖，系统被攻击
  */
 private const val ILLEGAL_NAME: String = "../"
+
+/**
+ * Description: 获取内部文件目录
+ * Author: summer
+ */
+fun getInternalFileDir(): File {
+    return application.filesDir
+}
+
+/**
+ * Description: 获取内部缓存目录
+ * Author: summer
+ */
+fun getInternalCacheDir(): File {
+    return application.cacheDir
+}
+
+/**
+ * Description: 外部存储是否可写入，外部存储状态需要是[Environment.MEDIA_MOUNTED]才可写入
+ * Author: summer
+ */
+fun isExternalStorageWritable(): Boolean {
+    return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
+}
+
+/**
+ * Description: 外部存储是否可读，外部存储状态需要是[Environment.MEDIA_MOUNTED]或[Environment.MEDIA_MOUNTED_READ_ONLY]
+ * Author: summer
+ */
+fun isExternalStorageReadable(): Boolean {
+    return Environment.getExternalStorageState() in setOf(
+        Environment.MEDIA_MOUNTED, Environment.MEDIA_MOUNTED_READ_ONLY
+    )
+}
+
+/**
+ * Description: 获取外部存储目录，在API>=19时不需要申请读写外部存储权限
+ * Author: summer
+ *
+ * @param type 子文件目录类型，参考[Environment.DIRECTORY_MUSIC]等
+ */
+fun getExternalFilesDir(type: String? = null): File? {
+    if (!isExternalStorageReadable()) {
+        return null
+    }
+    val externalFilesDirs = ContextCompat.getExternalFilesDirs(application, type)
+    return externalFilesDirs[0]
+}
+
+/**
+ * Description: 获取外部缓存目录，在API>=19时不需要申请读写外部存储权限
+ * Author: summer
+ */
+fun getExternalCacheDir(): File? {
+    return application.externalCacheDir
+}
 
 /**
  * Description: 根据父目录和文件名创建文件
