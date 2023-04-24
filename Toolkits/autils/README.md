@@ -56,8 +56,8 @@ initAUtils(context, log, isUserLocalCache)
 | `getInternalCacheDir()` | 获取app内部缓存文件目录 | 无需申请权限，模拟器示例：`/data/user/0/[package]/cache` |
 | `isExternalStorageReadable()` | 外部存储是否可读 | |
 | `isExternalStorageWritable()` | 外部存储是否可写 | |
-| `getExternalFilesDir()` | 获取app指定类型外部文件存储目录 | Api>=19时无需声明权限， </br>模拟器示例：`/storage/emulated/0/Android/data/[package]/files` |
-| `getExternalCacheDir()` | 获取app外部缓存目录 | Api>=19时无需声明权限，</br>模拟器示例：`/storage/emulated/0/Android/data/[package]/cache` |
+| `getExternalFilesDir()` | 获取app指定类型外部文件存储目录 | Api>=19时无需声明权限， 模拟器示例：</br>`/storage/emulated/0/Android/data/[package]/files` |
+| `getExternalCacheDir()` | 获取app外部缓存目录 | Api>=19时无需声明权限，模拟器示例：</br>`/storage/emulated/0/Android/data/[package]/cache` |
 | `createFile()` | 创建文件 | 会关联创建父目录（如不存在） |
 | `deleteFileByPath()` | 根据文件路径删除文件 | |
 | `renameFile()` | 重命名文件 | |
