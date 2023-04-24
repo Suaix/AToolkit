@@ -14,11 +14,15 @@ import com.atoolkit.apermission.APermission
 import com.atoolkit.apermission.IPermissionCallback
 import com.atoolkit.apermission.goToPermissionSetting
 import com.atoolkit.apermission.handlePermissions
-import com.atoolkit.astorage.createFile
-import com.atoolkit.astorage.deleteFileByPath
-import com.atoolkit.astorage.renameFile
-import com.atoolkit.astorage.unzipFile
-import com.atoolkit.astorage.zipFile
+import com.atoolkit.autils.createFile
+import com.atoolkit.autils.deleteFileByPath
+import com.atoolkit.autils.getInternalCacheDir
+import com.atoolkit.autils.getInternalFileDir
+import com.atoolkit.autils.isExternalStorageReadable
+import com.atoolkit.autils.isExternalStorageWritable
+import com.atoolkit.autils.renameFile
+import com.atoolkit.autils.unzipFile
+import com.atoolkit.autils.zipFile
 import com.atoolkit.autils.dp2Px
 import com.atoolkit.autils.getAndroidId
 import com.atoolkit.autils.getBSSID
@@ -161,6 +165,12 @@ class MainActivity : AppCompatActivity() {
                 .append("100dp = ${dp2Px(100F)}px\n")
                 .append("12sp = ${sp2Px(12F)}px\n")
                 .append("100px = ${px2Dp(100F)}dp\n")
+                .append("internal file path: ${getInternalFileDir().absolutePath}\n")
+                .append("internal cache path: ${getInternalCacheDir().absolutePath}\n")
+                .append("is external storage writable=${isExternalStorageWritable()}\n")
+                .append("is external storage readable=${isExternalStorageReadable()}\n")
+                .append("external file path: ${com.atoolkit.autils.getExternalFilesDir()?.absolutePath}\n")
+                .append("external cache path:${com.atoolkit.autils.getExternalCacheDir()?.absolutePath}\n")
         mBinding.tvDeviceInfo.text = sb.toString()
     }
 

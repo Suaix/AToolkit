@@ -1,4 +1,4 @@
-package com.atoolkit.astorage
+package com.atoolkit.autils
 
 import android.os.Environment
 import androidx.core.content.ContextCompat
@@ -194,7 +194,7 @@ fun renameFile(srcFilePath: String, destFilePath: String): Boolean {
  * @param callback 压缩结果回调，注意callback可能在子线程中被调用。回调有三个参数：第一个参数Boolean，标识压缩成功（true）或失败（false）；
  * 第二个参数String，标识压缩成功或失败的信息；第三个参数File，标识压缩后zip文件，压缩成功时有值，压缩失败时为null；
  */
-suspend fun zipFile(
+fun zipFile(
     srcFilePath: String,
     zipFilePath: String? = null,
     callback: ((Boolean, String, File?) -> Unit)? = null
@@ -212,19 +212,18 @@ suspend fun zipFile(
     } else {
         zipFilePath
     }
-    withContext(Dispatchers.IO) {
-        var zos: ZipOutputStream? = null
-        try {
-            zos = ZipOutputStream(FileOutputStream(targetZipPath))
-            aLog?.v(TAG, "targetZip is created = ${File(targetZipPath).exists()}")
-            zipFileOrDirectory("", srcFile, zos)
-            callback?.invoke(true, "zip file success", File(targetZipPath))
-        } catch (e: Exception) {
-            e.printStackTrace()
-            callback?.invoke(false, "zip file failed with exception: ${e.message}", null)
-        } finally {
-            zos?.close()
-        }
+
+    var zos: ZipOutputStream? = null
+    try {
+        zos = ZipOutputStream(FileOutputStream(targetZipPath))
+        aLog?.v(TAG, "targetZip is created = ${File(targetZipPath).exists()}")
+        zipFileOrDirectory("", srcFile, zos)
+        callback?.invoke(true, "zip file success", File(targetZipPath))
+    } catch (e: Exception) {
+        e.printStackTrace()
+        callback?.invoke(false, "zip file failed with exception: ${e.message}", null)
+    } finally {
+        zos?.close()
     }
 }
 
@@ -277,7 +276,7 @@ private fun zipFileOrDirectory(rootPath: String, srcFile: File, zos: ZipOutputSt
  * @param isDeleteZipFileAfterUnzipSuccess 是否在解压成功后删除原zip文件，默认为false；
  * @param callback 解压结果回调：第一个参数为Boolean，代表解压成功（true）或失败（false）；第二个参数为解压成功或失败的信息；
  */
-suspend fun unzipFile(
+fun unzipFile(
     zipFile: File,
     targetFolderPath: String? = null,
     isUnzipWithParentDir: Boolean = true,
@@ -291,71 +290,69 @@ suspend fun unzipFile(
         targetFolderPath
     }
 
-    withContext(Dispatchers.IO) {
-        var zipInputStream: ZipInputStream? = null
-        try {
-            val targetFile = if (isUnzipWithParentDir) {
-                val targetFileName = zipFile.name.let {
-                    val index = it.lastIndexOf(".")
-                    if (index <= 0) {
-                        it
-                    } else {
-                        it.substring(0, index)
-                    }
+    var zipInputStream: ZipInputStream? = null
+    try {
+        val targetFile = if (isUnzipWithParentDir) {
+            val targetFileName = zipFile.name.let {
+                val index = it.lastIndexOf(".")
+                if (index <= 0) {
+                    it
+                } else {
+                    it.substring(0, index)
                 }
-                File(unzipFolderPath, targetFileName)
-            } else {
-                File(unzipFolderPath)
             }
-            if (!targetFile.exists()) {
-                targetFile.mkdirs()
-            }
-            // 创建ZipFile实例
-            val zf = ZipFile(zipFile)
-            zipInputStream = ZipInputStream(FileInputStream(zipFile))
-
-            var zipEntry = zipInputStream.nextEntry
-            while (zipEntry != null) {
-                val entryName = zipEntry.name
-                if (entryName?.contains(MAC_IGNORE) == true || entryName?.contains(ILLEGAL_NAME) == true) {
-                    zipEntry = zipInputStream.nextEntry
-                    continue
-                }
-                val temp = File(targetFile, entryName)
-                if (zipEntry.isDirectory) {
-                    // 是文件夹，创建文件夹
-                    temp.mkdirs()
-                    zipEntry = zipInputStream.nextEntry
-                    continue
-                }
-                // 如果文件有父级目录，且父级目录不存在，则创建父级目录
-                val parentFile = temp.parentFile
-                if (parentFile != null && !parentFile.exists()) {
-                    parentFile.mkdirs()
-                }
-                // 开始读取文件流
-                val buffer = ByteArray(BUFF_SIZE)
-                val outputStream = FileOutputStream(temp)
-                val inputStream = zf.getInputStream(zipEntry)
-                var len = inputStream.read(buffer)
-                while (len != -1) {
-                    outputStream.write(buffer, 0, len)
-                    len = inputStream.read(buffer)
-                }
-                outputStream.close()
-                inputStream.close()
-                zipEntry = zipInputStream.nextEntry
-            }
-            if (isDeleteZipFileAfterUnzipSuccess) {
-                val isDeleteSuccess = zipFile.delete()
-                aLog?.v(TAG, "zipFile delete after unzip success, isDeleteSuccess=$isDeleteSuccess")
-            }
-            callback?.invoke(true, "unzip file success!")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            callback?.invoke(false, "unzip failed with exception: ${e.message}")
-        } finally {
-            zipInputStream?.close()
+            File(unzipFolderPath, targetFileName)
+        } else {
+            File(unzipFolderPath)
         }
+        if (!targetFile.exists()) {
+            targetFile.mkdirs()
+        }
+        // 创建ZipFile实例
+        val zf = ZipFile(zipFile)
+        zipInputStream = ZipInputStream(FileInputStream(zipFile))
+
+        var zipEntry = zipInputStream.nextEntry
+        while (zipEntry != null) {
+            val entryName = zipEntry.name
+            if (entryName?.contains(MAC_IGNORE) == true || entryName?.contains(ILLEGAL_NAME) == true) {
+                zipEntry = zipInputStream.nextEntry
+                continue
+            }
+            val temp = File(targetFile, entryName)
+            if (zipEntry.isDirectory) {
+                // 是文件夹，创建文件夹
+                temp.mkdirs()
+                zipEntry = zipInputStream.nextEntry
+                continue
+            }
+            // 如果文件有父级目录，且父级目录不存在，则创建父级目录
+            val parentFile = temp.parentFile
+            if (parentFile != null && !parentFile.exists()) {
+                parentFile.mkdirs()
+            }
+            // 开始读取文件流
+            val buffer = ByteArray(BUFF_SIZE)
+            val outputStream = FileOutputStream(temp)
+            val inputStream = zf.getInputStream(zipEntry)
+            var len = inputStream.read(buffer)
+            while (len != -1) {
+                outputStream.write(buffer, 0, len)
+                len = inputStream.read(buffer)
+            }
+            outputStream.close()
+            inputStream.close()
+            zipEntry = zipInputStream.nextEntry
+        }
+        if (isDeleteZipFileAfterUnzipSuccess) {
+            val isDeleteSuccess = zipFile.delete()
+            aLog?.v(TAG, "zipFile delete after unzip success, isDeleteSuccess=$isDeleteSuccess")
+        }
+        callback?.invoke(true, "unzip file success!")
+    } catch (e: Exception) {
+        e.printStackTrace()
+        callback?.invoke(false, "unzip failed with exception: ${e.message}")
+    } finally {
+        zipInputStream?.close()
     }
 }
