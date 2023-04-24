@@ -15,7 +15,7 @@ initAUtils(context, log, isUserLocalCache)
 
 **DeviceInfoUtil**：提供获取设备相关信息的工具方法
 | 方法 | 说明 | 备注 |
-| :--: | :--: | :--: |
+| :-- | :-- | :-- |
 | `getImei()` | 获取设备imei号，Android10及以上系统获取为空；| |
 | `getAndroidId()` | 获取设备AndroidId | |
 | `getMac()` | 获取设备mac地址 | |
@@ -35,7 +35,7 @@ initAUtils(context, log, isUserLocalCache)
 
 **PhoneStatusUtils**：提供获取手机状态的相关工具方法
 | 方法 | 说明 | 备注 |
-| :--: | :--: | :--: |
+| :-- | :-- | :-- |
 | `isNavigationBarShow()` | 底部状态栏是否展示 | |
 | `isNotificationEnabled()` | 判断APP通知是否打开 | |
 | `goNotificationSetting()` | 跳转到通知设置页面，API26及以上系统会直接跳转到通知设置页，</br>API26以下跳转到应用详情设置页 | |
@@ -48,17 +48,16 @@ initAUtils(context, log, isUserLocalCache)
 | `isNFCEnabled()` | 判断NFC是否可用 | |
 | `goNFCSetting()` | 跳转到NFC设置页（如果有NFC功能的话） | |
 
+
 **AFileUtils**：提供文件操作相关工具方法
 | 方法 | 说明 | 备注 |
-| :--: | :--: | :--: |
+| :-- | :-- | :-- |
 | `getInternalFileDir()` | 获取app内部文件目录 | 无需申请权限，模拟器示例：`/data/user/0/[package]/files` |
 | `getInternalCacheDir()` | 获取app内部缓存文件目录 | 无需申请权限，模拟器示例：`/data/user/0/[package]/cache` |
 | `isExternalStorageReadable()` | 外部存储是否可读 | |
 | `isExternalStorageWritable()` | 外部存储是否可写 | |
-| `getExternalFilesDir()` | 获取app指定类型外部文件存储目录 | Api>=19时无需声明权限， </br>
-模拟器示例：`/storage/emulated/0/Android/data/[package]/files` |
-| `getExternalCacheDir()` | 获取app外部缓存目录 | Api>=19时无需声明权限，</br>
-模拟器示例：`/storage/emulated/0/Android/data/[package]/cache` |
+| `getExternalFilesDir()` | 获取app指定类型外部文件存储目录 | Api>=19时无需声明权限， </br>模拟器示例：`/storage/emulated/0/Android/data/[package]/files` |
+| `getExternalCacheDir()` | 获取app外部缓存目录 | Api>=19时无需声明权限，</br>模拟器示例：`/storage/emulated/0/Android/data/[package]/cache` |
 | `createFile()` | 创建文件 | 会关联创建父目录（如不存在） |
 | `deleteFileByPath()` | 根据文件路径删除文件 | |
 | `renameFile()` | 重命名文件 | |
