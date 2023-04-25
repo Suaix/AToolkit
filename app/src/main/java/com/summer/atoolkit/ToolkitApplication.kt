@@ -7,6 +7,8 @@ import com.atoolkit.alog.LOG_LEVEL_D
 import com.atoolkit.alog.write.AWritableLog
 import com.atoolkit.alog.write.AWritableLogConfig
 import com.atoolkit.apermission.initAPermission
+import com.atoolkit.aqrcode.AQRConfig
+import com.atoolkit.aqrcode.initAQrCode
 import com.atoolkit.astorage.AStorageConfig
 import com.atoolkit.astorage.initAStorage
 import com.atoolkit.autils.initAUtils
@@ -35,6 +37,8 @@ class ToolkitApplication : Application() {
         initAUtils(this, log, false)
         val storageConfig = AStorageConfig(log = log)
         initAStorage(this, storageConfig)
+        val qrConfig = AQRConfig(log = log)
+        initAQrCode(this, qrConfig)
     }
 
 }

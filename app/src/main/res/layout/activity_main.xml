@@ -27,7 +27,13 @@
                 android:id="@+id/bt_file_utils"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="测试FileUtils"/>
+                android:text="测试FileUtils" />
+
+        <Button
+                android:id="@+id/bt_qr_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="跳转二维码测试页面" />
 
         <TextView
                 android:id="@+id/tv_device_info"
@@ -39,7 +45,7 @@
                 android:id="@+id/ll_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"/>
+                android:orientation="vertical" />
     </LinearLayout>
 
 </ScrollView>

@@ -77,6 +77,9 @@ class MainActivity : AppCompatActivity() {
         mBinding.btFileUtils.setOnClickListener {
             testFileUtils()
         }
+        mBinding.btQrCode.setOnClickListener {
+            startActivity(Intent(this@MainActivity, QRCodeActivity::class.java))
+        }
         testDeviceInfo()
     }
 
