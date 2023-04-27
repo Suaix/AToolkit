@@ -24,4 +24,13 @@
             app:layout_constraintTop_toBottomOf="@+id/iv_qr_code"
             app:layout_constraintEnd_toEndOf="parent" />
 
+    <Button
+            android:id="@+id/bt_scan_qr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/iv_bar_code"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="扫描二维码" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

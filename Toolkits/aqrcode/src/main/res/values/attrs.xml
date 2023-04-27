@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <declare-styleable name="AScanView" tools:ignore="ResourceName">
+        <attr name="aqr_scan_line_color" format="color" />
+        <attr name="aqr_scan_line_ratio" format="float" />
+        <attr name="aqr_scan_line_height" format="dimension" />
+        <attr name="aqr_scan_line_move_distance" format="dimension" />
+
+        <attr name="aqr_frame_color" format="color" />
+        <attr name="aqr_frame_width" format="dimension"/>
+        <attr name="aqr_frame_height" format="dimension" />
+        <attr name="aqr_frame_horizontal_offset" format="dimension" />
+        <attr name="aqr_frame_vertical_offset" format="dimension" />
+
+        <attr name="aqr_corner_color" format="color" />
+        <attr name="aqr_corner_width" format="dimension"/>
+        <attr name="aqr_corner_height" format="dimension" />
+        <attr name="aqr_corner_margin" format="dimension" />
+
+        <attr name="aqr_mask_color" format="color" />
+        <attr name="aqr_scan_model" format="enum">
+            <enum name="full_screen" value="0" />
+            <enum name="classic" value="1" />
+        </attr>
+    </declare-styleable>
+</resources>

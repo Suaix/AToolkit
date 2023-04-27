@@ -1,11 +1,13 @@
 package com.summer.atoolkit
 
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.atoolkit.aqrcode.createBarCode
 import com.atoolkit.aqrcode.createQRCode
+import com.atoolkit.aqrcode.widget.AScanActivity
 import com.atoolkit.autils.dp2Px
 import com.atoolkit.autils.sp2Px
 import com.summer.atoolkit.databinding.ActivityQrcodeBinding
@@ -22,6 +24,9 @@ class QRCodeActivity : AppCompatActivity() {
         mBinding = ActivityQrcodeBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
         testQrAndBarCode()
+        mBinding.btScanQr.setOnClickListener {
+            startActivity(Intent(this@QRCodeActivity, AScanActivity::class.java))
+        }
     }
 
     private fun testQrAndBarCode() {
