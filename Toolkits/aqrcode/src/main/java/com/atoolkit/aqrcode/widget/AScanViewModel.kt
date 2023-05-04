@@ -1,14 +1,29 @@
 package com.atoolkit.aqrcode.widget
 
+import android.Manifest
 import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
+import androidx.camera.core.impl.CameraConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import com.atoolkit.apermission.isPermissionGranted
+import com.atoolkit.aqrcode.IMAGE_QUALITY_1080P
+import com.atoolkit.aqrcode.IMAGE_QUALITY_720P
+import com.atoolkit.aqrcode.TAG
+import com.atoolkit.aqrcode.aLog
 import com.atoolkit.aqrcode.application
+import com.atoolkit.aqrcode.config.AAspectRationCameraConfig
+import com.atoolkit.aqrcode.config.AResolutionCameraConfig
+import com.atoolkit.aqrcode.config.ICameraConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.lang.ref.WeakReference
+import java.util.concurrent.Executors
 
 
 /**
@@ -22,18 +37,60 @@ internal class AScanViewModel : ViewModel() {
 
     private var mPreviewView: WeakReference<PreviewView>? = null
     private var mCamera: Camera? = null
+    private var mCameraConfig: ICameraConfig? = null
+    private lateinit var mLifecycleOwner: LifecycleOwner
 
-    fun init(previewView: PreviewView) {
+    fun init(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
+        mLifecycleOwner = lifecycleOwner
         mPreviewView = WeakReference(previewView)
     }
 
     fun startCamera() {
-        // TODO: 检查相机权限
-
+        // 首先检查相机权限是否授予了
+        if (!isPermissionGranted(Manifest.permission.CAMERA)) {
+            _uiState.value = AScanUiState.PermissionUiState(Manifest.permission.CAMERA)
+            return
+        }
+        // 初始化相机配置
+        initCameraConfig()
+        // 构建并配置camerax
         val listenableFuture = ProcessCameraProvider.getInstance(application)
         listenableFuture.addListener({
-
+            val preview = mCameraConfig?.optionPreview(Preview.Builder()) ?: Preview.Builder().build()
+            val cameraSelector =
+                mCameraConfig?.optionSelector(CameraSelector.Builder()) ?: CameraSelector.Builder().build()
+            preview.setSurfaceProvider(mPreviewView?.get()?.surfaceProvider)
+            val imageAnalysisBuilder = ImageAnalysis.Builder()
+                    .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            val imageAnalysis = mCameraConfig?.optionImageAnalysis(imageAnalysisBuilder) ?: imageAnalysisBuilder.build()
+            imageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor()) { proxy ->
+                val imageWidth = proxy.width
+                val imageHeight = proxy.height
+                // TODO: 分析图片结果
+                aLog?.v(TAG, "width: $imageWidth, height: $imageHeight")
+                proxy.close()
+            }
+            if (mCamera != null) {
+                listenableFuture.get().unbindAll()
+            }
+            mCamera = listenableFuture.get().bindToLifecycle(mLifecycleOwner, cameraSelector, preview, imageAnalysis)
         }, ContextCompat.getMainExecutor(application))
+    }
+
+    private fun initCameraConfig() {
+        if (mCameraConfig != null) {
+            return
+        }
+        val dm = application.resources.displayMetrics
+        val size = dm.widthPixels.coerceAtMost(dm.heightPixels)
+        if (size > IMAGE_QUALITY_1080P) {
+            mCameraConfig = AResolutionCameraConfig(IMAGE_QUALITY_1080P)
+        } else if (size > IMAGE_QUALITY_720P) {
+            mCameraConfig = AResolutionCameraConfig(IMAGE_QUALITY_720P)
+        } else {
+            mCameraConfig = AAspectRationCameraConfig()
+        }
     }
 
 }
