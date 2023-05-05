@@ -14,7 +14,6 @@ import kotlin.math.min
  * Time: 2023/5/4 19:22
  * Description: AAspectRationCameraConfig是
  */
-
 class AAspectRationCameraConfig : ICameraConfig {
 
     private val mAspectRatio: Float

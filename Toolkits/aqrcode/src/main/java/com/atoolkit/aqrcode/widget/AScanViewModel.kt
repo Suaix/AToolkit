@@ -16,10 +16,15 @@ import com.atoolkit.aqrcode.IMAGE_QUALITY_1080P
 import com.atoolkit.aqrcode.IMAGE_QUALITY_720P
 import com.atoolkit.aqrcode.TAG
 import com.atoolkit.aqrcode.aLog
+import com.atoolkit.aqrcode.analyer.AMultiFormatAnalyzer
+import com.atoolkit.aqrcode.analyer.IAnalyzer
 import com.atoolkit.aqrcode.application
 import com.atoolkit.aqrcode.config.AAspectRationCameraConfig
 import com.atoolkit.aqrcode.config.AResolutionCameraConfig
+import com.atoolkit.aqrcode.config.AScanDecodeConfig
+import com.atoolkit.aqrcode.config.DefaultFormats
 import com.atoolkit.aqrcode.config.ICameraConfig
+import com.google.zxing.MultiFormatReader
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.lang.ref.WeakReference
@@ -39,6 +44,15 @@ internal class AScanViewModel : ViewModel() {
     private var mCamera: Camera? = null
     private var mCameraConfig: ICameraConfig? = null
     private lateinit var mLifecycleOwner: LifecycleOwner
+    private var mOrientation = application.resources.configuration.orientation
+
+    @Volatile
+    private var isAnalyze = true
+
+    @Volatile
+    private var isAnalyzeResult = false
+
+    private var mAnalyzer: IAnalyzer<MultiFormatReader>? = null
 
     fun init(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
         mLifecycleOwner = lifecycleOwner
@@ -53,6 +67,13 @@ internal class AScanViewModel : ViewModel() {
         }
         // 初始化相机配置
         initCameraConfig()
+        if (mAnalyzer == null) {
+            mAnalyzer = AMultiFormatAnalyzer(
+                AScanDecodeConfig(
+                    hints = DefaultFormats().hints
+                )
+            )
+        }
         // 构建并配置camerax
         val listenableFuture = ProcessCameraProvider.getInstance(application)
         listenableFuture.addListener({
@@ -67,8 +88,14 @@ internal class AScanViewModel : ViewModel() {
             imageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor()) { proxy ->
                 val imageWidth = proxy.width
                 val imageHeight = proxy.height
-                // TODO: 分析图片结果
-                aLog?.v(TAG, "width: $imageWidth, height: $imageHeight")
+                // 分析图片结果
+                if (isAnalyze && !isAnalyzeResult) {
+                    val result = mAnalyzer?.analyze(proxy, mOrientation)
+                    if (result != null) {
+                        aLog?.i(TAG, "result: ${result.text}")
+                        isAnalyzeResult = true
+                    }
+                }
                 proxy.close()
             }
             if (mCamera != null) {
@@ -84,12 +111,12 @@ internal class AScanViewModel : ViewModel() {
         }
         val dm = application.resources.displayMetrics
         val size = dm.widthPixels.coerceAtMost(dm.heightPixels)
-        if (size > IMAGE_QUALITY_1080P) {
-            mCameraConfig = AResolutionCameraConfig(IMAGE_QUALITY_1080P)
+        mCameraConfig = if (size > IMAGE_QUALITY_1080P) {
+            AResolutionCameraConfig(IMAGE_QUALITY_1080P)
         } else if (size > IMAGE_QUALITY_720P) {
-            mCameraConfig = AResolutionCameraConfig(IMAGE_QUALITY_720P)
+            AResolutionCameraConfig(IMAGE_QUALITY_720P)
         } else {
-            mCameraConfig = AAspectRationCameraConfig()
+            AAspectRationCameraConfig()
         }
     }
 

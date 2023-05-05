@@ -1,6 +1,5 @@
 package com.atoolkit.aqrcode.config
 
-import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 
 

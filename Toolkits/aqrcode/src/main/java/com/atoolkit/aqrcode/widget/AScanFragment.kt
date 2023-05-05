@@ -13,6 +13,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.atoolkit.apermission.APermission
 import com.atoolkit.apermission.IPermissionCallback
 import com.atoolkit.apermission.handlePermissions
+import com.atoolkit.aqrcode.R
 import com.atoolkit.aqrcode.databinding.AqrFragmentScanBinding
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -63,7 +64,11 @@ class AScanFragment : Fragment() {
                     when (uiState) {
                         is AScanUiState.PermissionUiState -> {
                             // 请求权限
-                            val aPermission = APermission.Builder(arrayOf(uiState.permission)).build()
+                            val aPermission = APermission.Builder(arrayOf(uiState.permission))
+                                    .explainTitle(getString(R.string.aqr_camera_permission_des_title))
+                                    .explainMsg(getString(R.string.aqr_camera_permission_des))
+                                    .explainLeftText(getString(R.string.aqr_camera_permission_cancel))
+                                    .build()
                             activity?.let {
                                 handlePermissions(it, listOf(aPermission), object : IPermissionCallback {
                                     override fun onPermissionResult(granted: List<String>, denied: List<String>) {
