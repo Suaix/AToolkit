@@ -18,6 +18,13 @@ sealed class ADecodeFormat : IDecodeFormat {
     abstract fun getPossibleFormats(): List<BarcodeFormat>
 }
 
+class QrDecodeFormat() : ADecodeFormat() {
+    override fun getPossibleFormats(): List<BarcodeFormat> {
+        return listOf(BarcodeFormat.QR_CODE)
+    }
+
+}
+
 class AllDecodeFormat() : ADecodeFormat() {
     override fun getPossibleFormats(): List<BarcodeFormat> {
         return listOf(

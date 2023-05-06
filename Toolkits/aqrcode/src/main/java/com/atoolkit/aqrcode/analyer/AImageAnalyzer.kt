@@ -19,9 +19,13 @@ import kotlin.math.min
  * Description: AImageAnalyzer是将图像解析成字节数组的抽象类
  */
 
-abstract class AImageAnalyzer<T : Reader>(private val decodeConfig: AScanDecodeConfig) : IAnalyzer<T> {
+abstract class AImageAnalyzer<T : Reader>(private val decodeConfig: AScanDecodeConfig) : IAnalyzer {
 
-    internal val mReader: T = createReader()
+    internal val mReader: T
+
+    init {
+        mReader = createReader()
+    }
 
     @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
     override fun analyze(image: ImageProxy, orientation: Int): Result? {
@@ -29,8 +33,8 @@ abstract class AImageAnalyzer<T : Reader>(private val decodeConfig: AScanDecodeC
             aLog?.w(TAG, "image format: ${image.format}")
             return null
         }
-        val width = image.width
-        val height = image.height
+        var width = image.width
+        var height = image.height
         // 将图像转化成字节数组
         val nv21Bytes = yuv420ThreePlanesToNv21(image.image?.planes, width, height)?.array() ?: return null
         val dataBytes = if (orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -41,6 +45,10 @@ abstract class AImageAnalyzer<T : Reader>(private val decodeConfig: AScanDecodeC
                     rotatedData[x * height + height - y - 1] = nv21Bytes[x + y * width]
                 }
             }
+            // 交换宽高
+            val temp = width
+            width = height
+            height = temp
             rotatedData
         } else {
             nv21Bytes
@@ -49,9 +57,7 @@ abstract class AImageAnalyzer<T : Reader>(private val decodeConfig: AScanDecodeC
         val decodeArea = if (decodeConfig.isFullAreaScan) {
             Rect(0, 0, width, height)
         } else {
-            decodeConfig.analyzeAreaRect?.let {
-                it
-            } ?: run {
+            decodeConfig.analyzeAreaRect ?: run {
                 val size = (min(width, height) * decodeConfig.areaRectRation).toInt()
                 val left = (width - size) / 2 + decodeConfig.areaRectHorizontalOffset
                 val top = (height - size) / 2 + decodeConfig.areaRectVerticalOffset
@@ -74,4 +80,12 @@ abstract class AImageAnalyzer<T : Reader>(private val decodeConfig: AScanDecodeC
      * @return 返回解析结果
      */
     abstract fun analyzeArea(data: ByteArray, dataWidth: Int, dataHeight: Int, decodeArea: Rect): Result?
+
+    /**
+     * Description: 创建用于读取图像字节流的读取器，用来解析二维码或条形码
+     * Author: summer
+     *
+     * @return 图像读取器
+     */
+    abstract fun createReader(): T
 }

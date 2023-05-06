@@ -5,22 +5,32 @@
         <attr name="aqr_scan_line_ratio" format="float" />
         <attr name="aqr_scan_line_height" format="dimension" />
         <attr name="aqr_scan_line_move_distance" format="dimension" />
+        <attr name="aqr_scan_line_margin_left" format="dimension" />
+        <attr name="aqr_scan_line_margin_top" format="dimension" />
+        <attr name="aqr_scan_line_margin_right" format="dimension" />
+        <attr name="aqr_scan_line_margin_bottom" format="dimension" />
+        <!-- 扫描线动画间隔时间，单位ms -->
+        <attr name="aqr_scan_line_animation_interval" format="integer" />
+        <!-- 扫描线样式为图片时，需要配置扫描线图片资源 -->
+        <attr name="aqr_scan_line_drawable" format="reference" />
 
         <attr name="aqr_frame_color" format="color" />
-        <attr name="aqr_frame_width" format="dimension"/>
-        <attr name="aqr_frame_height" format="dimension" />
-        <attr name="aqr_frame_horizontal_offset" format="dimension" />
-        <attr name="aqr_frame_vertical_offset" format="dimension" />
-
+        <attr name="aqr_frame_size" format="dimension" />
+        <attr name="aqr_frame_stroke_width" format="dimension" />
         <attr name="aqr_corner_color" format="color" />
-        <attr name="aqr_corner_width" format="dimension"/>
+        <attr name="aqr_corner_width" format="dimension" />
         <attr name="aqr_corner_height" format="dimension" />
         <attr name="aqr_corner_margin" format="dimension" />
-
         <attr name="aqr_mask_color" format="color" />
+
         <attr name="aqr_scan_model" format="enum">
             <enum name="full_screen" value="0" />
             <enum name="classic" value="1" />
+        </attr>
+        <attr name="aqr_scan_line_style" format="enum">
+            <enum name="none" value="0" />
+            <enum name="line" value="1" />
+            <enum name="image" value="2" />
         </attr>
     </declare-styleable>
 </resources>

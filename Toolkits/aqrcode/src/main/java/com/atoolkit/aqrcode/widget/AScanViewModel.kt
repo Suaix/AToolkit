@@ -5,7 +5,6 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
-import androidx.camera.core.impl.CameraConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
@@ -16,17 +15,21 @@ import com.atoolkit.aqrcode.IMAGE_QUALITY_1080P
 import com.atoolkit.aqrcode.IMAGE_QUALITY_720P
 import com.atoolkit.aqrcode.TAG
 import com.atoolkit.aqrcode.aLog
+import com.atoolkit.aqrcode.analyer.AImageAnalyzer
 import com.atoolkit.aqrcode.analyer.AMultiFormatAnalyzer
-import com.atoolkit.aqrcode.analyer.IAnalyzer
 import com.atoolkit.aqrcode.application
 import com.atoolkit.aqrcode.config.AAspectRationCameraConfig
 import com.atoolkit.aqrcode.config.AResolutionCameraConfig
 import com.atoolkit.aqrcode.config.AScanDecodeConfig
-import com.atoolkit.aqrcode.config.DefaultFormats
 import com.atoolkit.aqrcode.config.ICameraConfig
+import com.atoolkit.aqrcode.config.QrDecodeFormat
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.zxing.MultiFormatReader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executors
 
@@ -41,6 +44,7 @@ internal class AScanViewModel : ViewModel() {
     val uiState = _uiState.asStateFlow()
 
     private var mPreviewView: WeakReference<PreviewView>? = null
+    private var mCameraProvider: ListenableFuture<ProcessCameraProvider>? = null
     private var mCamera: Camera? = null
     private var mCameraConfig: ICameraConfig? = null
     private lateinit var mLifecycleOwner: LifecycleOwner
@@ -52,13 +56,21 @@ internal class AScanViewModel : ViewModel() {
     @Volatile
     private var isAnalyzeResult = false
 
-    private var mAnalyzer: IAnalyzer<MultiFormatReader>? = null
+    private var mAnalyzer: AImageAnalyzer<MultiFormatReader>? = null
 
+    /**
+     * Description: 初始化
+     * Author: summer
+     */
     fun init(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
         mLifecycleOwner = lifecycleOwner
         mPreviewView = WeakReference(previewView)
     }
 
+    /**
+     * Description: 开启相机，开始扫描图像
+     * Author: summer
+     */
     fun startCamera() {
         // 首先检查相机权限是否授予了
         if (!isPermissionGranted(Manifest.permission.CAMERA)) {
@@ -70,13 +82,14 @@ internal class AScanViewModel : ViewModel() {
         if (mAnalyzer == null) {
             mAnalyzer = AMultiFormatAnalyzer(
                 AScanDecodeConfig(
-                    hints = DefaultFormats().hints
+                    hints = QrDecodeFormat().hints,
+                    isFullAreaScan = true
                 )
             )
         }
         // 构建并配置camerax
-        val listenableFuture = ProcessCameraProvider.getInstance(application)
-        listenableFuture.addListener({
+        mCameraProvider = ProcessCameraProvider.getInstance(application)
+        mCameraProvider?.addListener({
             val preview = mCameraConfig?.optionPreview(Preview.Builder()) ?: Preview.Builder().build()
             val cameraSelector =
                 mCameraConfig?.optionSelector(CameraSelector.Builder()) ?: CameraSelector.Builder().build()
@@ -93,15 +106,16 @@ internal class AScanViewModel : ViewModel() {
                     val result = mAnalyzer?.analyze(proxy, mOrientation)
                     if (result != null) {
                         aLog?.i(TAG, "result: ${result.text}")
+                        _uiState.value = AScanUiState.ResultUiState(result)
                         isAnalyzeResult = true
                     }
                 }
                 proxy.close()
             }
             if (mCamera != null) {
-                listenableFuture.get().unbindAll()
+                mCameraProvider?.get()?.unbindAll()
             }
-            mCamera = listenableFuture.get().bindToLifecycle(mLifecycleOwner, cameraSelector, preview, imageAnalysis)
+            mCamera = mCameraProvider?.get()?.bindToLifecycle(mLifecycleOwner, cameraSelector, preview, imageAnalysis)
         }, ContextCompat.getMainExecutor(application))
     }
 

@@ -410,8 +410,9 @@ fun getNavigationBarHeight(): Int {
  * Description: dp转px，返回Float，使用Int的可以调用方转化下类型
  * Author: summer
  */
-fun dp2Px(dpValue: Float): Float {
-    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, application.resources.displayMetrics)
+fun dp2Px(dpValue: Float, context: Context? = null): Float {
+    val dm = context?.resources?.displayMetrics ?: application.resources.displayMetrics
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, dm)
 }
 
 /**

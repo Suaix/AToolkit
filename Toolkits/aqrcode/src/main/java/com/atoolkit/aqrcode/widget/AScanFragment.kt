@@ -1,9 +1,11 @@
 package com.atoolkit.aqrcode.widget
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -81,6 +83,17 @@ class AScanFragment : Fragment() {
                                         }
                                     }
                                 })
+                            }
+                        }
+                        is AScanUiState.ResultUiState -> {
+                            val result = uiState.result
+                            for (point in result.resultPoints){
+                                val pointView = View(context)
+                                pointView.setBackgroundColor(Color.RED)
+                                val layoutParams = FrameLayout.LayoutParams(40, 40)
+                                layoutParams.leftMargin = point.x.toInt()
+                                layoutParams.topMargin = point.y.toInt()
+                                mBinding.root.addView(pointView, layoutParams)
                             }
                         }
                         else -> {

@@ -85,13 +85,9 @@ class AMultiFormatAnalyzer(private val decodeConfig: AScanDecodeConfig) :
     private fun decodeInternal(source: LuminanceSource, isMultiDecode: Boolean): Result? {
         var result: Result? = null
         try {
-            Log.d("summer", "decodeInternal: source=${source.toString()}")
-            aLog?.i(TAG, "decode internal start........")
             result = mReader.decodeWithState(BinaryBitmap(HybridBinarizer(source)))
-            Log.d("summer", "result text = ${result?.text}")
             aLog?.i(TAG, "hybridBinarizer result=$result")
             if (result == null && isMultiDecode) {
-                aLog?.i(TAG, "multi decode start..............")
                 result = mReader.decodeWithState(BinaryBitmap(GlobalHistogramBinarizer(source)))
                 aLog?.i(TAG, "multi decode result=$result")
             }
