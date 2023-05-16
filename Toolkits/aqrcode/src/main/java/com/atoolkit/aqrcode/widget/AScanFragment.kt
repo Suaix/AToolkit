@@ -1,11 +1,11 @@
 package com.atoolkit.aqrcode.widget
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
+import android.view.ViewTreeObserver
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -16,6 +16,8 @@ import com.atoolkit.apermission.APermission
 import com.atoolkit.apermission.IPermissionCallback
 import com.atoolkit.apermission.handlePermissions
 import com.atoolkit.aqrcode.R
+import com.atoolkit.aqrcode.TAG
+import com.atoolkit.aqrcode.aLog
 import com.atoolkit.aqrcode.databinding.AqrFragmentScanBinding
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -28,13 +30,14 @@ import kotlinx.coroutines.launch
  * Description: AScanFragment是扫码Fragment
  */
 
-class AScanFragment : Fragment() {
+class AScanFragment private constructor() : Fragment() {
 
     private lateinit var mBinding: AqrFragmentScanBinding
     private var mViewModel: AScanViewModel? = null
+    private var isScanning = false
 
     companion object {
-        fun newInstance(bundle: Bundle?): AScanFragment {
+        fun newInstance(bundle: Bundle? = null): AScanFragment {
             val fBundle = bundle ?: Bundle()
             val fragment = AScanFragment()
             fragment.arguments = fBundle
@@ -50,13 +53,25 @@ class AScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initListener()
+//        mBinding.svScanView.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+//            override fun onGlobalLayout() {
+//                mBinding.svScanView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+//                val scanArea = mBinding.svScanView.getScanArea()
+//                aLog?.i(TAG, "scanArea=$scanArea")
+//                startScan()
+//            }
+//        })
     }
 
     override fun onStart() {
         super.onStart()
         mViewModel = ViewModelProvider(requireActivity())[AScanViewModel::class.java]
         mViewModel?.init(this, mBinding.pvCameraPreview)
-        mViewModel?.startCamera()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        startScan()
     }
 
     private fun initListener() {
@@ -76,7 +91,7 @@ class AScanFragment : Fragment() {
                                     override fun onPermissionResult(granted: List<String>, denied: List<String>) {
                                         if (granted.isNotEmpty()) {
                                             // 已授权，再次开启相机
-                                            mViewModel?.startCamera()
+                                            startScan()
                                         } else {
                                             // 未授权，提示
                                             Toast.makeText(it, "需要获取相机权限", Toast.LENGTH_SHORT).show()
@@ -87,13 +102,8 @@ class AScanFragment : Fragment() {
                         }
                         is AScanUiState.ResultUiState -> {
                             val result = uiState.result
-                            for (point in result.resultPoints){
-                                val pointView = View(context)
-                                pointView.setBackgroundColor(Color.RED)
-                                val layoutParams = FrameLayout.LayoutParams(40, 40)
-                                layoutParams.leftMargin = point.x.toInt()
-                                layoutParams.topMargin = point.y.toInt()
-                                mBinding.root.addView(pointView, layoutParams)
+                            activity?.let {
+                                Toast.makeText(it, "扫码结果是：${result.text}", Toast.LENGTH_LONG).show()
                             }
                         }
                         else -> {
@@ -103,6 +113,28 @@ class AScanFragment : Fragment() {
                 }?.collect()
             }
         }
+    }
+
+    /**
+     * Description: 开始扫描
+     * Author: summer
+     */
+    private fun startScan() {
+        if (isScanning) {
+            return
+        }
+        val scanMode = mBinding.svScanView.getScanMode()
+        if (scanMode == AScanModel.FULLSCREEN) {
+            mViewModel?.startScan(true)
+        } else {
+            val scanArea = mBinding.svScanView.getScanArea()
+            if (scanArea.width() > 0 && scanArea.height() > 0) {
+                mViewModel?.startScan(false, scanArea)
+            } else {
+                mViewModel?.startScan(false)
+            }
+        }
+        isScanning = true
     }
 
 }

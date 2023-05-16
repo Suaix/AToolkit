@@ -19,7 +19,6 @@ import com.google.zxing.common.HybridBinarizer
  * Time: 2023/5/5 16:37
  * Description: AMultiFormatAnalyzer是多格式分析器
  */
-
 class AMultiFormatAnalyzer(private val decodeConfig: AScanDecodeConfig) :
     AImageAnalyzer<MultiFormatReader>(decodeConfig) {
     override fun analyzeArea(data: ByteArray, dataWidth: Int, dataHeight: Int, decodeArea: Rect): Result? {

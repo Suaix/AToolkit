@@ -13,6 +13,6 @@
             android:id="@+id/sv_scan_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:aqr_scan_model="full_screen" />
+            app:aqr_scan_model="classic" />
 
 </FrameLayout>

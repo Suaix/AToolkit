@@ -13,6 +13,6 @@ class AScanActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         mBinding = AqrActivityScanBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
-        supportFragmentManager.beginTransaction().replace(R.id.fl_root, AScanFragment()).commitAllowingStateLoss()
+        supportFragmentManager.beginTransaction().replace(R.id.fl_root, AScanFragment.newInstance()).commitAllowingStateLoss()
     }
 }

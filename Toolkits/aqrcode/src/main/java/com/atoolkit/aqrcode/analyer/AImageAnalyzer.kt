@@ -21,6 +21,7 @@ import kotlin.math.min
 
 abstract class AImageAnalyzer<T : Reader>(private val decodeConfig: AScanDecodeConfig) : IAnalyzer {
 
+    private val analyzeArea = Rect()
     internal val mReader: T
 
     init {
@@ -55,15 +56,18 @@ abstract class AImageAnalyzer<T : Reader>(private val decodeConfig: AScanDecodeC
         }
         // 获取数据解析区域
         val decodeArea = if (decodeConfig.isFullAreaScan) {
-            Rect(0, 0, width, height)
+            analyzeArea.set(0, 0, width, height)
+            analyzeArea
         } else {
             decodeConfig.analyzeAreaRect ?: run {
                 val size = (min(width, height) * decodeConfig.areaRectRation).toInt()
                 val left = (width - size) / 2 + decodeConfig.areaRectHorizontalOffset
                 val top = (height - size) / 2 + decodeConfig.areaRectVerticalOffset
-                Rect(left, top, left + size, top + size)
+                analyzeArea.set(left, top, left + size, top + size)
+                analyzeArea
             }
         }
+        aLog?.i(TAG, "decodeArea=$decodeArea")
         // 根据数据解析区域解析图像字节数组
         return analyzeArea(dataBytes, width, height, decodeArea)
     }

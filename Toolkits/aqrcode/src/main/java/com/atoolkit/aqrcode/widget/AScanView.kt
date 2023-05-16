@@ -9,6 +9,7 @@ import android.graphics.LinearGradient
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Paint.Style
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.Drawable
@@ -253,9 +254,9 @@ class AScanView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
         // 绘制蒙层
         drawMasker(canvas)
         // 绘制扫描线
-        if (mScanLineStyle == AScanLineStyle.LINE){
+        if (mScanLineStyle == AScanLineStyle.LINE) {
             drawScanLine(canvas)
-        } else if (mScanLineStyle == AScanLineStyle.IMAGE){
+        } else if (mScanLineStyle == AScanLineStyle.IMAGE) {
             drawScanLineBitmap(canvas)
         }
         // 绘制扫码框和角标
@@ -432,6 +433,22 @@ class AScanView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
             val h = it.height
             mScanLineBitmap = Bitmap.createBitmap(it, 0, 0, w, h, matrix, true)
         }
+    }
+
+    /**
+     * Description: 获取当前扫码模式
+     * Author: summer
+     */
+    fun getScanMode(): AScanModel {
+        return mScanModel
+    }
+
+    /**
+     * Description: 经典模式下获取扫码框区域
+     * Author: summer
+     */
+    fun getScanArea(): Rect {
+        return Rect(mFrame.left.toInt(), mFrame.top.toInt(), mFrame.right.toInt(), mFrame.bottom.toInt())
     }
 }
 
