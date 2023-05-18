@@ -11,3 +11,4 @@ internal const val IMAGE_QUALITY_1080P = 1080
 internal const val IMAGE_QUALITY_720P = 720
 internal const val ASPECT_RATIO_4_3 = 4f / 3f
 internal const val ASPECT_RATIO_16_9 = 16f / 9f
+const val QR_RESULT_CONTENT = "qr_result_content"

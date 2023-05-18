@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="aqr_camera_permission_des_title">Permission Needed</string>
-    <string name="aqr_camera_permission_des">Use the qrcode scanning function, you need to grant the permission of Camera</string>
-    <string name="aqr_camera_permission_cancel">Cancel</string>
+    <string name="aqr_common_permission_des_title">Permission Needed</string>
+    <string name="aqr_camera_permission_des">To use the qrcode scanning function, you need to grant the permission of Camera.</string>
+    <string name="aqr_read_storage_permission_des">To use the qrcode identify function, you need to grant the permission of read external storage.</string>
+    <string name="aqr_common_cancel">Cancel</string>
 </resources>

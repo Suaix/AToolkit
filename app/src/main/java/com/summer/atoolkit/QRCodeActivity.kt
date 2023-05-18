@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
+import com.atoolkit.aqrcode.QR_RESULT_CONTENT
 import com.atoolkit.aqrcode.createBarCode
 import com.atoolkit.aqrcode.createQRCode
 import com.atoolkit.aqrcode.widget.AScanActivity
@@ -18,6 +20,13 @@ import kotlinx.coroutines.withContext
 class QRCodeActivity : AppCompatActivity() {
 
     private lateinit var mBinding: ActivityQrcodeBinding
+    private val activityLaunch = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        val intent = it.data
+        if (it.resultCode == RESULT_OK && intent != null) {
+            val qrContent = intent.getStringExtra(QR_RESULT_CONTENT)
+            mBinding.btScanQr.text = qrContent
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +34,7 @@ class QRCodeActivity : AppCompatActivity() {
         setContentView(mBinding.root)
         testQrAndBarCode()
         mBinding.btScanQr.setOnClickListener {
-            startActivity(Intent(this@QRCodeActivity, AScanActivity::class.java))
+            activityLaunch.launch(Intent(this@QRCodeActivity, AScanActivity::class.java))
         }
     }
 

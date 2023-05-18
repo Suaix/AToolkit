@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="aqr_camera_permission_des_title">申请权限</string>
+    <string name="aqr_common_permission_des_title">申请权限</string>
     <string name="aqr_camera_permission_des">为了使用扫码功能，需要您授予使用相机的权限。</string>
-    <string name="aqr_camera_permission_cancel">取消</string>
+    <string name="aqr_read_storage_permission_des">需要您授权读取外部存储权限，以选择相机图片进行二维码识别。</string>
+    <string name="aqr_common_cancel">取消</string>
 </resources>

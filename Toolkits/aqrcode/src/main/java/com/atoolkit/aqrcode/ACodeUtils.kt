@@ -7,11 +7,19 @@ import android.graphics.Paint
 import android.text.TextPaint
 import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
+import com.atoolkit.aqrcode.config.AllDecodeFormat
 import com.google.zxing.BarcodeFormat
+import com.google.zxing.BinaryBitmap
 import com.google.zxing.EncodeHintType
+import com.google.zxing.LuminanceSource
+import com.google.zxing.MultiFormatReader
 import com.google.zxing.MultiFormatWriter
+import com.google.zxing.RGBLuminanceSource
 import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import com.google.zxing.Result
+import com.google.zxing.common.GlobalHistogramBinarizer
+import com.google.zxing.common.HybridBinarizer
 
 /**
  * Description: 根据内容创建二维码，耗时操作请放在协程或线程中执行
@@ -175,4 +183,47 @@ fun addCodeToBitmap(barCodeBitmap: Bitmap, content: String, textSize: Int, @Colo
         e.printStackTrace()
         return barCodeBitmap
     }
+}
+
+/**
+ * Description: 解析图片中的二维码或一维码
+ * Author: summer
+ *
+ * @param bitmap 待解析的图片
+ * @return 图片二维码（一维码）内容，解析失败或无二维码（一维码）时返回null
+ */
+fun parseCode(bitmap: Bitmap): String? {
+    // 转化为RGBLuminanceSource
+    val width = bitmap.width
+    val height = bitmap.height
+    val pixels = IntArray(width * height)
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+    val source = RGBLuminanceSource(width, height, pixels)
+    // 解析资源
+    val reader = MultiFormatReader()
+    reader.setHints(AllDecodeFormat().hints)
+    // 先尝试原始解析
+    var result = decodeInternal(reader, source)
+    if (result == null) {
+        // 原始解析为null，尝试进行黑白反转码解析
+        result = decodeInternal(reader, source.invert())
+    }
+    if (result == null && source.isRotateSupported) {
+        // 黑白反转码解析后还为null，尝试进行旋转后解析
+        result = decodeInternal(reader, source.rotateCounterClockwise())
+    }
+    return result?.text
+}
+
+private fun decodeInternal(reader: MultiFormatReader, source: LuminanceSource): Result? {
+    try {
+        var result = reader.decodeWithState(BinaryBitmap(HybridBinarizer(source)))
+        if (result == null) {
+            result = reader.decodeWithState(BinaryBitmap(GlobalHistogramBinarizer(source)))
+        }
+        return result
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return null
 }

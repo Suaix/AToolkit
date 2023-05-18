@@ -7,8 +7,11 @@ import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.YuvImage
 import android.media.Image.Plane
+import android.net.Uri
 import androidx.camera.core.ImageProxy
 import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.nio.ByteBuffer
 
 
@@ -18,7 +21,8 @@ import java.nio.ByteBuffer
  */
 @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
 internal fun getBitmap(imageProxy: ImageProxy): Bitmap? {
-    val nv21Buffer = yuv420ThreePlanesToNv21(imageProxy.image?.planes, imageProxy.width, imageProxy.height) ?: return null
+    val nv21Buffer =
+        yuv420ThreePlanesToNv21(imageProxy.image?.planes, imageProxy.width, imageProxy.height) ?: return null
     return getBitmap(nv21Buffer, imageProxy.width, imageProxy.height, imageProxy.imageInfo.rotationDegrees.toFloat())
 }
 
@@ -204,4 +208,26 @@ private fun unpackPlane(
         }
         rowStart += plane.rowStride
     }
+}
+
+/**
+ * Description: 从图片uri中获取Bitmap对象
+ * Author: summer
+ *
+ * @param uri 图片uri
+ * @param sampleSize 图片采样率，默认值为4，用来降低采样率减小内存占用
+ * @return Bitmap，发生异常时返回null
+ */
+internal fun getBitmapFromUri(uri: Uri, sampleSize: Int = 4): Bitmap? {
+    var bitmap: Bitmap? = null
+    try {
+        val options = BitmapFactory.Options()
+        options.inSampleSize = sampleSize // 可选：降低采样率以减小内存占用
+        val inputStream: InputStream? = application.contentResolver.openInputStream(uri)
+        bitmap = BitmapFactory.decodeStream(inputStream, null, options)
+        inputStream?.close()
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+    return bitmap
 }

@@ -151,4 +151,13 @@ open class ACameraScanHandler {
     open fun createAnalyzer(decodeConfig: AScanDecodeConfig): IAnalyzer {
         return AMultiFormatAnalyzer(decodeConfig)
     }
+
+    /**
+     * Description: 释放扫码相关资源
+     * Author: summer
+     */
+    fun release() {
+        mCameraProvider?.get()?.unbindAll()
+        mPreviewView = null
+    }
 }

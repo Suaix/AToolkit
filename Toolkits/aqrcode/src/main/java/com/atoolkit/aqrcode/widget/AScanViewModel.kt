@@ -59,4 +59,9 @@ internal class AScanViewModel : ViewModel() {
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        mScanHandler.release()
+    }
+
 }
