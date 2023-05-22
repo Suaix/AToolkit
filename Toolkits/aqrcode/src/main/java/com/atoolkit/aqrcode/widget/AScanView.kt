@@ -164,11 +164,6 @@ class AScanView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        return super.onTouchEvent(event)
-    }
-
     /**
      * Description: 初始化扫码框的区域范围
      * Author: summer

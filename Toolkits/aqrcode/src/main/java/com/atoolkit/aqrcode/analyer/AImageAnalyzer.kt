@@ -67,7 +67,7 @@ abstract class AImageAnalyzer<T : Reader>(private val decodeConfig: AScanDecodeC
                 analyzeArea
             }
         }
-        aLog?.i(TAG, "decodeArea=$decodeArea")
+        //aLog?.i(TAG, "decodeArea=$decodeArea")
         // 根据数据解析区域解析图像字节数组
         return analyzeArea(dataBytes, width, height, decodeArea)
     }

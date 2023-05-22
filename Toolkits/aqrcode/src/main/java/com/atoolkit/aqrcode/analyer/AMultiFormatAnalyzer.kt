@@ -85,13 +85,13 @@ class AMultiFormatAnalyzer(private val decodeConfig: AScanDecodeConfig) :
         var result: Result? = null
         try {
             result = mReader.decodeWithState(BinaryBitmap(HybridBinarizer(source)))
-            aLog?.i(TAG, "hybridBinarizer result=$result")
+//            aLog?.i(TAG, "hybridBinarizer result=$result")
             if (result == null && isMultiDecode) {
                 result = mReader.decodeWithState(BinaryBitmap(GlobalHistogramBinarizer(source)))
-                aLog?.i(TAG, "multi decode result=$result")
+//                aLog?.i(TAG, "multi decode result=$result")
             }
         } catch (e: Exception) {
-            aLog?.w(TAG, "AMultiFormatAnalyzer: decode internal exception, msg=${e.message}", e)
+//            aLog?.w(TAG, "AMultiFormatAnalyzer: decode internal exception, msg=${e.message}", e)
         }
         return result
     }

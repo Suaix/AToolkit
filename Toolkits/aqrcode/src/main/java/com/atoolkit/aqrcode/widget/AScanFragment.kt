@@ -3,6 +3,7 @@ package com.atoolkit.aqrcode.widget
 import android.Manifest
 import android.app.Activity.RESULT_OK
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
@@ -21,7 +22,8 @@ import com.atoolkit.apermission.handlePermissions
 import com.atoolkit.apermission.isPermissionGranted
 import com.atoolkit.aqrcode.QR_RESULT_CONTENT
 import com.atoolkit.aqrcode.R
-import com.atoolkit.aqrcode.application
+import com.atoolkit.aqrcode.TAG
+import com.atoolkit.aqrcode.aLog
 import com.atoolkit.aqrcode.databinding.AqrFragmentScanBinding
 import com.atoolkit.aqrcode.getBitmapFromUri
 import com.atoolkit.aqrcode.parseCode
@@ -42,18 +44,18 @@ class AScanFragment private constructor() : Fragment() {
 
     private lateinit var mBinding: AqrFragmentScanBinding
     private var mViewModel: AScanViewModel? = null
-    private var isScanning = false
     private val activityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         val uri = it.data?.data
         uri?.let { picUri ->
-            val bitmap = getBitmapFromUri(picUri, 1)
-            bitmap?.let {
-                runBlocking(Dispatchers.IO) {
-                    val text = parseCode(it)
-                    activity?.runOnUiThread {
-                        Toast.makeText(context, "解析图片内容：$text", Toast.LENGTH_LONG).show()
-                        dealResult(text)
-                    }
+            runBlocking(Dispatchers.IO) {
+                val bitmap = getBitmapFromUri(picUri, 1)
+                if (bitmap == null) {
+                    aLog?.i(TAG, "decode bitmap from uir failed, can not identify qrcode info")
+                    return@runBlocking
+                }
+                val text = parseCode(bitmap)
+                activity?.runOnUiThread {
+                    dealResult(text)
                 }
             }
         }
@@ -76,14 +78,6 @@ class AScanFragment private constructor() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initListener()
-//        mBinding.svScanView.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
-//            override fun onGlobalLayout() {
-//                mBinding.svScanView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-//                val scanArea = mBinding.svScanView.getScanArea()
-//                aLog?.i(TAG, "scanArea=$scanArea")
-//                startScan()
-//            }
-//        })
     }
 
     override fun onStart() {
@@ -138,6 +132,11 @@ class AScanFragment private constructor() : Fragment() {
             }
         }
         mBinding.ivPickPhoto.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10及以上设备不需要申请读取外部存储权限
+                choosePicture()
+                return@setOnClickListener
+            }
             if (!isPermissionGranted(Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 val aPermission = APermission.Builder(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
                         .explainTitle(getString(R.string.aqr_common_permission_des_title))
@@ -173,9 +172,6 @@ class AScanFragment private constructor() : Fragment() {
      * Author: summer
      */
     private fun startScan() {
-        if (isScanning) {
-            return
-        }
         val scanMode = mBinding.svScanView.getScanMode()
         if (scanMode == AScanModel.FULLSCREEN) {
             mViewModel?.startScan(true)
@@ -187,7 +183,6 @@ class AScanFragment private constructor() : Fragment() {
                 mViewModel?.startScan(false)
             }
         }
-        isScanning = true
     }
 
     private fun dealResult(result: String?) {

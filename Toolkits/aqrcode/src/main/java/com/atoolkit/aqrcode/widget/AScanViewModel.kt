@@ -25,12 +25,14 @@ internal class AScanViewModel : ViewModel() {
     private val _uiState: MutableStateFlow<AScanUiState> = MutableStateFlow(AScanUiState.InitUiState)
     val uiState = _uiState.asStateFlow()
     private val mScanHandler = ACameraScanHandler()
+    private var lifecycleOwner: LifecycleOwner? = null
 
     /**
      * Description: 初始化
      * Author: summer
      */
     fun init(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
+        this.lifecycleOwner = lifecycleOwner
         mScanHandler.init(lifecycleOwner, previewView)
     }
 
@@ -50,11 +52,10 @@ internal class AScanViewModel : ViewModel() {
                 isFullAreaScan = isFullAreaScan,
                 analyzeAreaRect = scanArea
             )
-        ) { isSuccess, result ->
-            if (isSuccess && result != null) {
+        )
+        lifecycleOwner?.let {
+            mScanHandler.getScanResultLiveData().observe(it){result ->
                 _uiState.value = AScanUiState.ResultUiState(result)
-            } else {
-//                aLog?.i(TAG, "未识别到二维码或条形码！isSuccess=$isSuccess")
             }
         }
     }
