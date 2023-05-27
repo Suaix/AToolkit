@@ -1,5 +1,7 @@
 package com.atoolkit.aqrcode.scan
 
+import androidx.lifecycle.LiveData
+
 
 /**
  * Author:summer
@@ -32,6 +34,8 @@ interface ICameraControl {
      * @param linearZoom 取值[0..1]，取0时为相机支持的最小缩放比，取1时为相机支持的最大缩放比
      */
     fun lineZoomTo(linearZoom: Float)
+
+    fun getTorchState(): LiveData<Int>?
 
     /**
      * Description: 当前相机是否有闪光灯单元

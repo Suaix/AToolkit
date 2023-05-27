@@ -63,6 +63,12 @@ open class ACameraScanHandler : ICameraControl {
     // 相机初始化配置
     private var mCameraConfig: ICameraConfig? = null
 
+    // 声音和震动播放控制器
+    private var mBeepControl: ABeepControl? = null
+
+    // 环境光线感知控制器
+    private var mLightSensorControl: ALightSensorControl? = null
+
     // 生命周期拥有者
     private lateinit var mLifecycleOwner: LifecycleOwner
 
@@ -122,9 +128,14 @@ open class ACameraScanHandler : ICameraControl {
      *
      * @param lifecycleOwner 生命周期拥有者，用来初始化CameraX
      * @param previewView 相机页面预览控件，用来展示相机拍摄到的画面
+     * @param onLightChangeListener 监听环境光线变化的监听器
      */
     @SuppressLint("ClickableViewAccessibility")
-    fun init(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
+    fun init(
+        lifecycleOwner: LifecycleOwner,
+        previewView: PreviewView,
+        onLightChangeListener: ILightChangedListener? = null
+    ) {
         mLifecycleOwner = lifecycleOwner
         mPreviewView = WeakReference(previewView)
         val gestureDetector = ScaleGestureDetector(application, scaleListener)
@@ -141,6 +152,15 @@ open class ACameraScanHandler : ICameraControl {
             }
 
         })
+        // 初始化声音和震动控制器
+        if (isSupportBeepSound() || isSupportVibrate()) {
+            mBeepControl = ABeepControl()
+        }
+        // 初始化光线感知控制器
+        if (isSupportLightSensor() && onLightChangeListener != null) {
+            mLightSensorControl = ALightSensorControl()
+            mLightSensorControl?.register(onLightChangeListener)
+        }
         isInited = true
     }
 
@@ -184,8 +204,11 @@ open class ACameraScanHandler : ICameraControl {
                     val result = mAnalyzer?.analyze(proxy, mOrientation)
                     if (result != null) {
                         aLog?.i(TAG, "result: ${result.text}")
+                        // 播放声音
+                        mBeepControl?.playBeep(isSupportBeepSound(), isSupportVibrate())
+                        // 回调扫描结果
                         runBlocking {
-                            withContext(Dispatchers.Main){
+                            withContext(Dispatchers.Main) {
                                 scanResult.value = result
                             }
                         }
@@ -305,6 +328,30 @@ open class ACameraScanHandler : ICameraControl {
     }
 
     /**
+     * Description: 是否支持播放蜂鸣声音
+     * Author: summer
+     */
+    open fun isSupportBeepSound(): Boolean {
+        return true
+    }
+
+    /**
+     * Description: 是否震动
+     * Author: summer
+     */
+    open fun isSupportVibrate(): Boolean {
+        return true
+    }
+
+    /**
+     * Description: 是否支持手机光线传感器感知，回调光线感知值
+     * Author: summer
+     */
+    open fun isSupportLightSensor(): Boolean {
+        return true
+    }
+
+    /**
      * Description: 用来控制是否解析相机拍摄到的图像
      * Author: summer
      */
@@ -327,6 +374,8 @@ open class ACameraScanHandler : ICameraControl {
     fun release() {
         mCameraProvider?.get()?.unbindAll()
         mPreviewView = null
+        mBeepControl?.release()
+        mLightSensorControl?.unregister()
     }
 
     override fun zoomInCamera() {
@@ -366,5 +415,9 @@ open class ACameraScanHandler : ICameraControl {
             return
         }
         mCamera?.cameraControl?.enableTorch(isTurnOn)
+    }
+
+    override fun getTorchState(): LiveData<Int>? {
+        return mCamera?.cameraInfo?.torchState
     }
 }

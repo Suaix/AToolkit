@@ -2,14 +2,13 @@ package com.summer.atoolkit
 
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import com.atoolkit.aqrcode.QR_RESULT_CONTENT
 import com.atoolkit.aqrcode.createBarCode
 import com.atoolkit.aqrcode.createQRCode
-import com.atoolkit.aqrcode.widget.AScanActivity
+import com.atoolkit.aqrcode.page.AScanActivity
 import com.atoolkit.autils.dp2Px
 import com.atoolkit.autils.sp2Px
 import com.summer.atoolkit.databinding.ActivityQrcodeBinding

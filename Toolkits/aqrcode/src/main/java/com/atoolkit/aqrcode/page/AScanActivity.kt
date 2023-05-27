@@ -1,4 +1,4 @@
-package com.atoolkit.aqrcode.widget
+package com.atoolkit.aqrcode.page
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

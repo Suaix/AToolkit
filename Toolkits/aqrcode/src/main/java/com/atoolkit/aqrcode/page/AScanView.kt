@@ -1,6 +1,5 @@
-package com.atoolkit.aqrcode.widget
+package com.atoolkit.aqrcode.page
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -14,7 +13,6 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
-import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.atoolkit.aqrcode.R

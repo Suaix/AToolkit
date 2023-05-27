@@ -1,4 +1,4 @@
-package com.atoolkit.aqrcode.widget
+package com.atoolkit.aqrcode.page
 
 import android.Manifest
 import android.app.Activity.RESULT_OK
@@ -124,6 +124,15 @@ class AScanFragment private constructor() : Fragment() {
                                 dealResult(result.text)
                             }
                         }
+                        is AScanUiState.LightUiState -> {
+                            aLog?.v(TAG, "ui light is dark=${uiState.isDark}")
+                            if (uiState.isShowFlashView){
+                                mBinding.ivFlashView.visibility = View.VISIBLE
+                            } else {
+                                mBinding.ivFlashView.visibility = View.GONE
+                            }
+                            mBinding.ivFlashView.isSelected = !uiState.isDark
+                        }
                         else -> {
 
                         }
@@ -157,6 +166,10 @@ class AScanFragment private constructor() : Fragment() {
                 return@setOnClickListener
             }
             choosePicture()
+        }
+
+        mBinding.ivFlashView.setOnClickListener {
+            mViewModel?.toggleFlash()
         }
     }
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -9,7 +10,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-    <com.atoolkit.aqrcode.widget.AScanView
+    <com.atoolkit.aqrcode.page.AScanView
             android:id="@+id/sv_scan_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -17,11 +18,23 @@
 
     <ImageView
             android:id="@+id/iv_pick_photo"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:src="@drawable/aqr_ic_photo"
+            android:padding="5dp"
             android:layout_gravity="end|bottom"
             android:layout_marginEnd="24dp"
             android:layout_marginBottom="24dp" />
+
+    <ImageView
+            android:id="@+id/iv_flash_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:src="@drawable/aqr_flashlight_selector"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="24dp"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
 </FrameLayout>
